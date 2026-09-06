@@ -1,0 +1,9 @@
+torch
+torchvision
+timm
+transformers
+peft
+albumentations
+scikit-learn
+grad-cam
+pillow
