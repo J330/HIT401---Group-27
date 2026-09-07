@@ -1,7 +1,7 @@
 # ml/train_effnetv2s.py
 # Source: https://huggingface.co/timm/efficientnetv2_rw_s.ra2_in1k
-#         https://huggingface.co/docs/timm/models/efficientnet
-#         EfficientNetV2 paper -- Tan & Le (2021), https://arxiv.org/abs/2104.00298
+# https://huggingface.co/docs/timm/models/efficientnet
+
 import timm
 import torch
 from common import get_loaders, train_model

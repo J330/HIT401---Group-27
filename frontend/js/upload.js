@@ -1,6 +1,6 @@
 // frontend/js/upload.js
-// Previews the chosen image, then submits it and hands the result to
-// result.html via sessionStorage (no extra backend endpoint needed).
+// Previews the chosen image, then submits it and hands the result on result.html
+
 document.getElementById("imageInput").addEventListener("change", (e) => {
   const file = e.target.files[0];
   if (!file) return;

@@ -1,6 +1,6 @@
 # backend/detector/views.py
-# Handles the HTTP/file/database side; all model logic is in inference.py.
 # Source: https://www.django-rest-framework.org/api-guide/views/
+
 import io
 from PIL import Image
 from django.core.files.base import ContentFile

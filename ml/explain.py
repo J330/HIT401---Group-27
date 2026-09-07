@@ -1,8 +1,8 @@
 # ml/explain.py
-# Grad-CAM for CNNs (EfficientNetV2-S, ConvNeXt V2 Base) + the reshape needed
-# to run the same technique on transformers (Swin, ViT, DINOv2).
+
 # Source: https://github.com/jacobgil/pytorch-grad-cam
-#         https://github.com/jacobgil/pytorch-grad-cam/blob/master/tutorials/vision_transformers.md
+# https://github.com/jacobgil/pytorch-grad-cam/blob/master/tutorials/vision_transformers.md
+
 from pytorch_grad_cam import GradCAM
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 

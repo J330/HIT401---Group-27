@@ -1,5 +1,5 @@
 // frontend/js/result.js
-// Reads the prediction saved by upload.js and renders it.
+// Reads the prediction saved by upload.js.
 const raw = sessionStorage.getItem("predictionResult");
 const container = document.getElementById("resultContainer");
 

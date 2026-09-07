@@ -1,8 +1,6 @@
 # ml/split_data.py
-# Leakage-safe train/val split. Only healthy and black_sigatoka are split --
-# other_disease and non_banana stay untouched, used later only to test the
-# open-set gate (build_gate.py / inference.py), never to train a classifier.
 # Source: https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html
+
 import os
 import shutil
 from sklearn.model_selection import train_test_split

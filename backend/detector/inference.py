@@ -1,10 +1,7 @@
 # backend/detector/inference.py
-# Loads the DINOv2 open-set gate once at Django startup, plus whichever
-# closed-set classifier settings.ACTIVE_MODEL names, and exposes a single
-# predict_image() function for views.py to call per request.
-#
 # Sources: AnomalyDINO -- Damm et al. (2025), https://huggingface.co/facebook/dinov2-base
-#          jacobgil/pytorch-grad-cam -- https://github.com/jacobgil/pytorch-grad-cam
+# jacobgil/pytorch-grad-cam -- https://github.com/jacobgil/pytorch-grad-cam
+
 import os
 import numpy as np
 import torch

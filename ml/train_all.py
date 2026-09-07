@@ -1,5 +1,5 @@
 # ml/train_all.py
-# Convenience script: runs all five training scripts back to back.
+# runs all five training scripts back to back.
 import subprocess
 
 SCRIPTS = [
