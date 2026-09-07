@@ -1,11 +1,7 @@
 # ml/build_gate.py
-# Builds one reference embedding ("centroid") per known class from DINOv2's
-# frozen features. At inference, a new image is compared to these centroids;
-# anything too far from both is flagged as "not Black Sigatoka". No labelled
-# examples of other diseases are needed -- this is training-free.
-# Source: AnomalyDINO -- Damm et al. (2025),
 # https://openaccess.thecvf.com/content/WACV2025/papers/Damm_AnomalyDINO_Boosting_Patch-Based_Few-Shot_Anomaly_Detection_With_DINOv2_WACV_2025_paper.pdf
 # Model: https://huggingface.co/facebook/dinov2-base
+
 import os
 import torch
 from transformers import AutoModel, AutoImageProcessor

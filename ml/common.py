@@ -1,8 +1,7 @@
 # ml/common.py
-# Shared dataset loader + training loop, imported by every train_*.py script
-# so the loop is written once, correctly, and reused everywhere.
 # Sources: Albumentations docs -- https://albumentations.ai/docs/
-#          torchvision ImageFolder -- https://docs.pytorch.org/vision/stable/generated/torchvision.datasets.ImageFolder.html
+#torchvision ImageFolder -- https://docs.pytorch.org/vision/stable/generated/torchvision.datasets.ImageFolder.html
+
 import numpy as np
 from PIL import Image
 import torch

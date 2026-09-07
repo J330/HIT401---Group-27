@@ -1,6 +1,7 @@
 # ml/clean_data.py
-# Removes any image file that's corrupt or unreadable before training.
+# Removes any image file that's corrupt or not readable before training.
 # Source: https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.verify
+
 import os
 from PIL import Image
 

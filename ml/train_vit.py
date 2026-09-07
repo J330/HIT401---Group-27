@@ -1,7 +1,7 @@
 # ml/train_vit.py
 # Source: https://huggingface.co/docs/transformers/model_doc/vit
-#         https://huggingface.co/google/vit-base-patch16-224
-#         ViT paper -- Dosovitskiy et al. (2021), https://arxiv.org/abs/2010.11929
+# https://huggingface.co/google/vit-base-patch16-224
+
 from transformers import AutoImageProcessor, AutoModelForImageClassification
 import torch
 from common import get_loaders, train_model

@@ -1,8 +1,8 @@
 # ml/train_dinov2_lora.py
 # Source: https://huggingface.co/docs/transformers/model_doc/dinov2
-#         https://huggingface.co/facebook/dinov2-base
-#         https://huggingface.co/docs/peft/main/en/task_guides/image_classification_lora
-#         DINOv2 paper -- Oquab et al. (2024), https://arxiv.org/abs/2304.07193
+# https://huggingface.co/facebook/dinov2-base
+# https://huggingface.co/docs/peft/main/en/task_guides/image_classification_lora
+
 from transformers import AutoImageProcessor, Dinov2ForImageClassification
 from peft import LoraConfig, get_peft_model
 import torch

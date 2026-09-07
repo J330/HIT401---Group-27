@@ -1,7 +1,7 @@
 # ml/train_convnextv2.py
 # Source: https://huggingface.co/docs/transformers/model_doc/convnextv2
-#         https://huggingface.co/facebook/convnextv2-base-22k-224
-#         ConvNeXt V2 paper -- Woo et al. (2023), https://arxiv.org/abs/2301.00808
+# https://huggingface.co/facebook/convnextv2-base-22k-224
+
 from transformers import AutoImageProcessor, AutoModelForImageClassification
 import torch
 from common import get_loaders, train_model

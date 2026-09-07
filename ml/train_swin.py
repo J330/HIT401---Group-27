@@ -1,7 +1,7 @@
 # ml/train_swin.py
 # Source: https://huggingface.co/docs/transformers/model_doc/swin
-#         https://huggingface.co/microsoft/swin-base-patch4-window7-224
-#         Swin Transformer paper -- Liu et al. (2021), https://arxiv.org/abs/2103.14030
+# https://huggingface.co/microsoft/swin-base-patch4-window7-224
+
 from transformers import AutoImageProcessor, AutoModelForImageClassification
 import torch
 from common import get_loaders, train_model

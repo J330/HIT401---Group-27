@@ -1,7 +1,5 @@
 # ml/test.py
-# Quick sanity checks -- not a full test suite, just quick checks that core
-# pieces work before you trust a full training run.
-# Run with: python test.py
+
 import numpy as np
 import torch
 from common import build_transforms

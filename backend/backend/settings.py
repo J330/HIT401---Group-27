@@ -1,7 +1,8 @@
 # backend/backend/settings.py
 # Sources: https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
-#          https://whitenoise.readthedocs.io/
-#          https://github.com/adamchainz/django-cors-headers
+# https://whitenoise.readthedocs.io/
+# https://github.com/adamchainz/django-cors-headers
+
 import os
 from pathlib import Path
 

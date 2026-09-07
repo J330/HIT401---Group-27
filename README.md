@@ -11,10 +11,10 @@ disease staging is out of scope.
 
 ```
 Capstone_Project/
-├── data/            <- add your raw images here (see data/raw/*/README.md)
-├── ml/               <- data cleaning, model training, evaluation, explainability
-├── backend/          <- Django REST API (see backend/README.md first)
-└── frontend/         <- plain HTML/CSS/JS upload page
+├── data/            
+├── ml/               
+├── backend/          
+└── frontend/         
 ```
 
 ## Order of operations
@@ -60,8 +60,7 @@ Capstone_Project/
    The first two should print `healthy` / `black_sigatoka`; the last two
    should both print `not_black_sigatoka`.
 
-7. Set up the backend — **read backend/README.md first**, it explains which
-   files Django auto-generates vs. which ones in this zip you copy in.
+7. Set up the backend — **read backend/README.md first**
 
 8. Run the backend locally:
    ```
@@ -71,26 +70,10 @@ Capstone_Project/
    python manage.py runserver
    ```
 
-9. Open `frontend/index.html` (or `cd frontend && python -m http.server 8080`)
-   to use the upload page. Update `API_BASE_URL` in `frontend/js/api.js`
-   first if your backend isn't running on `127.0.0.1:8080`.
-
 ## Switching which model serves the website
 
 `backend/backend/settings.py` has `ACTIVE_MODEL`, read from an environment
 variable (default `"convnextv2"`). It can be `"efficientnetv2s"`,
 `"convnextv2"`, `"swin"`, or `"vit"` — whichever one won in step 4's
 `evaluate.py`. Change the environment variable and restart the server
-(locally) or update it in the Render dashboard and redeploy (in
-production) — no code edit needed either way.
-
-## Deployment
-
-See the Deployment section of the Project Cookbook document for the full
-Render setup (build.sh, environment variables, Web Service + Static Site).
-
-## Sources
-
-Every script has a "Source:" comment at the top naming exactly where its
-approach and pretrained checkpoint come from (Hugging Face model cards,
-official papers, and library documentation).
+(locally).

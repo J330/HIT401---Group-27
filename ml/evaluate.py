@@ -1,8 +1,8 @@
 # ml/evaluate.py
 # Loads each trained checkpoint and reports accuracy + a confusion matrix,
-# so you can see which of the four closed-set candidates to deploy.
 # Source: scikit-learn docs -- classification_report / confusion_matrix
 # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html
+
 import torch
 from sklearn.metrics import classification_report, confusion_matrix
 from common import get_loaders

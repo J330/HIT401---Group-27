@@ -12,7 +12,7 @@ from transformers import AutoImageProcessor, AutoModelForImageClassification, Au
 CLASSIFIER_CHECKPOINT = "facebook/convnextv2-base-22k-224"
 CLASSIFIER_WEIGHTS = "models/convnextv2base.pt"
 CLASS_NAMES = ["healthy", "black_sigatoka"]
-GATE_THRESHOLD = 0.60  # cosine distance -- calibrate against other_disease/non_banana images
+GATE_THRESHOLD = 0.60  # cosine distance think against other_disease/non_banana images
 
 
 def load_models():

@@ -1,7 +1,6 @@
 # backend/detector/admin.py
-# Registers Prediction so you can browse saved predictions at /admin/
-# without writing any extra UI.
 # Source: https://docs.djangoproject.com/en/5.0/ref/contrib/admin/
+
 from django.contrib import admin
 from .models import Prediction
 
