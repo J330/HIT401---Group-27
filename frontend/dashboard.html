@@ -1,0 +1,97 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="{% static 'dashboard.css' %}">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scan History — Leaf Health Check</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Public+Sans:wght@400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <h1>Black Sigatoka Detector</h1>
+    <p>Upload a banana leaf photo to check for Black Sigatoka disease.</p>
+  </header>
+  <nav class="site-nav">
+    <a href="http://127.0.0.1:8080/index.html">Home</a>
+    <a href="http://127.0.0.1:8080/upload.html">Analyse a Leaf</a>
+    <a href="http://127.0.0.1:8000/dashboard/">Dashboard</a>
+    <a href="http://127.0.0.1:8080/account.html">Account</a>
+    <a href="http://127.0.0.1:8080/about.html">About</a>
+  </nav>
+  <div class="page">
+    <header>
+      <div class="user-status">Signed in as <strong>{{ request.user.username }}</strong></div>
+      <div class="mark">leaf health check</div>
+      <h1>Scan history</h1>
+      <p class="sub">Every leaf you've checked, most recent first.</p>
+    </header>
+
+    <div class="summary-row">
+      <div class="summary-card">
+        <p class="summary-number">{{ total_scans }}</p>
+        <p class="summary-label">total scans</p>
+      </div>
+      <div class="summary-card healthy">
+        <p class="summary-number">{{ healthy_scans }}</p>
+        <p class="summary-label">healthy</p>
+      </div>
+      <div class="summary-card diseased">
+        <p class="summary-number">{{ diseased_scans }}</p>
+        <p class="summary-label">diseased</p>
+      </div>
+    </div>
+
+    <div class="divider">results</div>
+
+    <table class="scan-table">
+      <thead>
+        <tr>
+          <th class="col-image"></th>
+          <th class="col-status">Status</th>
+          <th class="col-detail">Detail</th>
+          <th class="col-confidence">Confidence</th>
+          <th class="col-date">Date</th>
+          <th class="col-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for prediction in predictions %}
+        <tr>
+          <td class="col-image">
+            {% if prediction.image %}
+            <img class="scan-image" src="{{ prediction.image.url }}" alt="Uploaded leaf">
+            {% endif %}
+          </td>
+          <td class="col-status">
+            {% if prediction.label == "healthy" %}
+            <span class="status-pill healthy">Healthy</span>
+            {% else %}
+            <span class="status-pill diseased">Black Sigatoka</span>
+            {% endif %}
+          </td>
+          <td class="col-detail">
+            {% if prediction.label == "healthy" %}
+            No visible lesions, spotting, or discoloration.
+            {% else %}
+            Black Sigatoka detected.
+            {% endif %}
+          </td>
+          <td class="col-confidence">{% widthratio prediction.confidence 1 100 %}%</td>
+          <td class="col-date">{{ prediction.created_at|date:"M d, Y" }}</td>
+          <td class="col-actions">
+            <button class="action-button delete delete-button" type="button" data-id="{{ prediction.id }}">Delete</button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No scans yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <script src="{% static 'js/dashboard.js' %}"></script>
+</body>
+</html>
