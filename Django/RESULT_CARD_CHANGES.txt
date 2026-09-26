@@ -1,3 +1,25 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:3192158c0430b4e8e31d7ad8b4deb37204a25aecf322d4181502608eb9436d73
-size 820
+DINOv2 RESULT CARD UPDATE
+=========================
+
+1. Stage 1 Banana Leaf threshold is now 65%.
+   This value is enforced by detector/inference.py, so an older
+   initial_similarity_config.json cannot silently restore the previous threshold.
+
+2. Stage 2 result display is now evidence-first:
+   - final accepted/unknown result
+   - classifier choice + confidence
+   - closest reference class + similarity
+   - pass/fail reliability checklist
+   - explicit rejection reasons
+   - detailed probabilities and reference scores in expandable sections
+
+3. Model evaluation statistics were added:
+   - Accuracy
+   - Balanced Accuracy
+   - Macro Precision
+   - Macro Recall
+   - Macro F1
+   - Weighted F1
+   - Per-class Precision / Recall / F1 / Support
+
+Run evaluate_dinov2_metrics.py once to generate the full metrics file.

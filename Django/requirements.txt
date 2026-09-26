@@ -1,3 +1,10 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:8a89d8120ef42677900ea9cde87adf3ebfbb0e370592f3805860d17e0d27cfa6
-size 95
+Django==4.2.30
+Pillow
+torch
+torchvision
+timm
+numpy
+scikit-learn
+rembg[cpu]
+gunicorn
+whitenoise

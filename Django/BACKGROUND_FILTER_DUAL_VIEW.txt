@@ -1,3 +1,36 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:859d9f50dce0300d8d51ca4d2cbebe51ccccb5120d0b8d8783e07e3f4f5cd0da
-size 1362
+DINOv2 STAGE-1 DUAL-VIEW BACKGROUND FILTER
+=========================================
+
+What changed
+------------
+Stage 1 now analyses TWO versions of every uploaded image:
+
+1. The original uploaded image.
+2. A foreground-isolated version with the background replaced by neutral grey
+   and the detected object cropped with a small amount of padding.
+
+When background removal succeeds, the Banana Leaf and Not Banana Leaf
+similarity scores are combined 50/50 before the existing 65% threshold and
+Banana-vs-Not-Banana margin checks are applied.
+
+Stage 2 is unchanged. The disease classifier, reference-similarity check and
+heatmap continue to use the ORIGINAL image.
+
+No retraining is required
+-------------------------
+This change does not retrain DINOv2 or the disease classifier, and it does not
+require rebuilding initial_references.pt. The filtered view is supplementary to
+the existing reference-gate calculation.
+
+Setup
+-----
+From the Django folder, install/update dependencies:
+
+    pip install -r requirements.txt
+
+The new dependency is rembg[cpu]. On the first scan it may download the small
+pre-trained u2netp background-removal model and cache it locally. Later scans
+reuse the cached model.
+
+If background removal cannot run, the website does NOT fail the scan. It falls
+back to original-image-only Stage 1 and shows that fallback on the result card.

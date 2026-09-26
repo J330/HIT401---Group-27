@@ -1,3 +1,67 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:536a9825511bd0ebe923344bb28e489048d62dfd00e05a27bdb0e2997a4b7969
-size 2806
+{% extends 'detector/base.html' %}
+{% load static %}
+
+{% block title %}Upload &middot; Black Sigatoka Detector{% endblock %}
+
+{% block content %}
+<div class="result-page-header upload-page-header">
+  <h1>Analyse a Leaf</h1>
+  <button class="btn btn-primary result-rescan-btn" id="submit-btn" form="analysis-form" type="button" disabled>Scan Image</button>
+</div>
+<p>
+  Upload an image of a leaf. Stage 1 compares the upload against two DINOv2
+  visual reference groups: <strong>Banana Leaf</strong> and
+  <strong>Not Banana Leaf</strong>. Only a Banana Leaf result continues to
+  Stage 2, where the selected health model checks the banana leaf condition.
+</p>
+
+<form id="analysis-form" onsubmit="return false;">
+  {% csrf_token %}
+
+  <div class="model-picker">
+    <strong>AI model</strong>
+    <p class="model-help" id="model-help">
+      <strong>DINOv2 Base</strong> is used for both Stage 1 Banana Leaf validation
+      and Stage 2 health analysis.
+    </p>
+    <input type="hidden" id="model-select" name="model" value="dinov2-base" {% if not any_model_available %}disabled{% endif %}>
+  </div>
+
+  <div class="upload-box" id="drop-zone">
+    <p>Drag an image here (including from a website), or click to choose a file</p>
+    <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp,image/avif" hidden>
+    <img id="preview" alt="Preview of the selected leaf photo">
+  </div>
+
+</form>
+
+<div class="loading-panel" id="loading-panel" style="display:none;">
+  <div class="loading-row">
+    <span class="loading-label" id="loading-label">Preparing scan…</span>
+    <span class="loading-percent" id="loading-percent">0%</span>
+  </div>
+  <div class="loading-bar" aria-hidden="true">
+    <div class="loading-bar-fill" id="loading-bar-fill" style="width:0%"></div>
+  </div>
+</div>
+<div class="spinner" id="spinner"></div>
+<p class="status-line{% if not initial_scan_available or not any_model_available %} error{% endif %}" id="status-line">
+  {% if not initial_scan_available %}
+    Stage 1 is not ready yet. Build <code>initial_references.pt</code> by running
+    <code>python Django\build_initial_references.py --dataset-root "C:\Users\jimmy\Downloads\Training\Datasets"</code>.
+    The file must be created in <code>{{ trained_ai_root }}\dinov2-base</code>.
+  {% elif not any_model_available %}
+    Stage 1 is ready, but no Stage 2 health-analysis model is available.
+  {% endif %}
+</p>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.RESULT_URL = "{% url 'detector:result' %}";
+  window.PREDICT_URL = "{% url 'detector:predict_api' %}";
+  window.INITIAL_SCAN_AVAILABLE = {% if initial_scan_available %}true{% else %}false{% endif %};
+</script>
+<script src="{% static 'detector/js/api.js' %}"></script>
+<script src="{% static 'detector/js/upload.js' %}"></script>
+{% endblock %}

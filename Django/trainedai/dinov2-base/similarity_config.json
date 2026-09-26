@@ -1,3 +1,7 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:f1bf29991462d73b496383dfa73e997c07267a8b73e3ba777a7ae8c235149f30
-size 286
+{
+    "similarity_threshold": 0.835,
+    "similarity_margin": 0.15,
+    "top_k": 5,
+    "classifier_min_confidence": 0.5,
+    "note": "Auto-generated starting thresholds. Test with real banana leaves and hard negative images such as coconut/palm leaves and adjust if necessary."
+}

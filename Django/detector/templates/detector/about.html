@@ -1,3 +1,54 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d32dee63f50fa9fa5f61dee4a03bff4a7f906a66f5c7aa0e04a48b9f4377e896
-size 2152
+{% extends 'detector/base.html' %}
+
+{% block title %}About &middot; Black Sigatoka Detector{% endblock %}
+
+{% block content %}
+<h1>About This Project</h1>
+
+<section class="about-section">
+  <h2>Methodology</h2>
+  <p>
+    This tool compares several machine learning approaches for
+    classifying banana leaf photos: classical models (SVM, Random
+    Forest) trained on extracted image features, alongside deep
+    learning models (a custom CNN, ResNet18, and MobileNetV3) trained
+    directly on leaf images. The best-performing model, selected
+    using a consistent evaluation script across all candidates, is
+    the one running behind this site.
+  </p>
+  <p>
+    Predictions are paired with Grad-CAM visualisations that
+    highlight which parts of the leaf most influenced the model's
+    decision, to support interpretability rather than a black-box
+    result.
+  </p>
+</section>
+
+<section class="about-section">
+  <h2>Biosecurity Context</h2>
+  <p>
+    Black Sigatoka (<em>Pseudocercospora fijiensis</em>) is a fungal
+    leaf disease not established on the Australian mainland, but
+    present on outer Torres Strait islands and in every country to
+    Australia's north. It was detected on an inner Torres Strait
+    island as recently as 2023, and is under active surveillance by
+    Northern Australia Quarantine Strategy (NAQS) plant pathologists
+    based in Darwin.
+  </p>
+  <p>
+    It is a formally notifiable plant disease. A 2001 outbreak in
+    north Queensland's main commercial banana-growing region
+    triggered a multi-year eradication response, illustrating the
+    cost of late detection.
+  </p>
+</section>
+
+<section class="about-section">
+  <h2>Limitations</h2>
+  <ul>
+    <li>This tool is a first-pass screening aid, not a diagnostic substitute for a laboratory test or an expert plant pathologist.</li>
+    <li>Model accuracy depends on the training datasets used and may not generalise perfectly to every lighting condition, leaf angle, or growth stage.</li>
+    <li>Suspected cases should always be reported through official biosecurity channels, regardless of what this tool shows.</li>
+  </ul>
+</section>
+{% endblock %}

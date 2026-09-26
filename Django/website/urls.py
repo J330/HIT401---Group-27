@@ -1,3 +1,7 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:67b4be9078be164f2f9cb7b5554a8382055498f1d6bda1e51fa3d4a19c3d6715
-size 167
+from django.contrib import admin
+from django.urls import include, path
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('detector.urls')),
+]

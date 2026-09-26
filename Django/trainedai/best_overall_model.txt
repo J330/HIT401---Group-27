@@ -1,3 +1,5 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:07b37a9e84159ef402f7c70ab6c50c0ad2a46e47020abe37a02f792e2eca90ea
-size 108
+Best model: convnextv2-base
+Ranking metric: F1_Macro
+Mean ranking metric: 1.000000
+Runs: 1
+Seeds: [42]

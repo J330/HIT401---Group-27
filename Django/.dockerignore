@@ -1,3 +1,19 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:aacc091195c118fc716618c3180f718341d506df6c9c7bbbef00c7cbff0a43a1
-size 310
+.git
+.gitignore
+.github
+.venv
+venv
+env
+__pycache__
+*.py[cod]
+*.log
+.pytest_cache
+.idea
+.vscode
+.DS_Store
+
+# Local-only/generated files that do not need to be sent to Cloud Build.
+media/
+
+# IMPORTANT: trainedai/ is intentionally NOT ignored.
+# Put trainedai/ beside manage.py before Cloud Run builds the image.

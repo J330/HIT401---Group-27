@@ -1,3 +1,30 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:3c3029a32205e53b39e26d71b648e27ca1c9d04fc43380c7dc5c3390bac9e717
-size 961
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Black Sigatoka Detector{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'detector/css/style.css' %}?v=5">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="{% url 'detector:home' %}">Black Sigatoka Detector</a>
+    <nav class="site-nav">
+      <a href="{% url 'detector:home' %}" {% if active_page == 'home' %}aria-current="page"{% endif %}>Home</a>
+      <a href="{% url 'detector:upload' %}" {% if active_page == 'upload' %}aria-current="page"{% endif %}>Upload</a>
+    </nav>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    HIT237 Group 27 &middot; Black Sigatoka Detection Project
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

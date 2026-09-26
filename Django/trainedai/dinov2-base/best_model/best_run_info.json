@@ -1,3 +1,6 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:97f9f8d9d873cba2dfa37339f533adf665baa07913e48cf454cc0125668173c8
-size 145
+{
+    "seed": 42,
+    "ranking_metric": "F1_Macro",
+    "ranking_metric_value": 0.9952288288288288,
+    "positive_class": "Black_Sigatoka"
+}

@@ -1,3 +1,12 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:43b72f0bf8a6458d63f6f83a6429074e8fdb183295eaa757e02b42619decb62e
-size 296
+from django.urls import path
+
+from . import views
+
+app_name = 'detector'
+
+urlpatterns = [
+    path('', views.home, name='home'),
+    path('upload/', views.upload, name='upload'),
+    path('result/', views.result, name='result'),
+    path('api/predict/', views.predict_api, name='predict_api'),
+]

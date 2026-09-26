@@ -1,3 +1,7 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:2d730be02b2eaf913a27462f6e3c1ec5e24483453ca066612b1f11c6007debdd
-size 122
+{
+    "0": "Black_Sigatoka",
+    "1": "Cordana",
+    "2": "Freckle",
+    "3": "Healthy",
+    "4": "Pestalotiopsis"
+}

@@ -1,3 +1,27 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:6ce4b692dc72a66d6e6efbffe666ed10762ab484614940e8d12b23e79a9593da
-size 746
+{
+    "Black_Sigatoka": {
+        "precision": 0.990990990990991,
+        "recall": 0.990990990990991,
+        "f1-score": 0.990990990990991,
+        "support": 111.0
+    },
+    "Healthy": {
+        "precision": 0.9994666666666666,
+        "recall": 0.9994666666666666,
+        "f1-score": 0.9994666666666666,
+        "support": 1875.0
+    },
+    "accuracy": 0.998992950654582,
+    "macro avg": {
+        "precision": 0.9952288288288288,
+        "recall": 0.9952288288288288,
+        "f1-score": 0.9952288288288288,
+        "support": 1986.0
+    },
+    "weighted avg": {
+        "precision": 0.998992950654582,
+        "recall": 0.998992950654582,
+        "f1-score": 0.998992950654582,
+        "support": 1986.0
+    }
+}

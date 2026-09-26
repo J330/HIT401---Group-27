@@ -1,3 +1,78 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:a4835be0984907989a2cd0a50bdb255632ff9dc8571ba5856d9f2229861baf9d
-size 2680
+GOOGLE CLOUD RUN DEPLOYMENT
+===========================
+
+This project is prepared for Cloud Run using the Dockerfile beside manage.py.
+
+1. BEFORE DEPLOYING: add your model folder here:
+
+   Django/
+   ├── Dockerfile
+   ├── manage.py
+   ├── requirements.txt
+   ├── trainedai/
+   │   └── dinov2-base/
+   │       ├── dinov2_banana_disease.pth
+   │       ├── dinov2_labels.json
+   │       ├── initial_references.pt
+   │       ├── disease_references.pt
+   │       └── any other DINOv2 config/metrics files you use
+   ├── detector/
+   └── website/
+
+2. IMPORTANT: verify the model files are the real files, not tiny Git LFS
+   pointer text files. Large model files normally need Git LFS if GitHub is
+   being used as the Cloud Build source repository.
+
+3. CLOUD RUN BUILD CONFIGURATION
+
+   If Django/ is the ROOT of the connected repository:
+       Dockerfile source location: /Dockerfile
+
+   If the repository contains Django/ as a subfolder:
+       Dockerfile source location: /Django/Dockerfile
+
+4. RECOMMENDED CLOUD RUN SETTINGS FOR THIS AI DEMO
+
+   CPU:              1
+   Memory:           start with 4 GiB
+   Minimum instances: 0
+   Maximum instances: 1 initially
+   Request timeout:   use several minutes if scans are slow on CPU
+
+   The Dockerfile deliberately uses one Gunicorn worker so DINOv2 is not loaded
+   into memory multiple times. You can test 2 GiB later if 4 GiB is unnecessary.
+
+5. OPTIONAL ENVIRONMENT VARIABLES
+
+   DJANGO_SECRET_KEY=<a long random secret>
+   DJANGO_DEBUG=False
+   DJANGO_ALLOWED_HOSTS=*
+   DJANGO_CSRF_TRUSTED_ORIGINS=https://*.run.app
+
+   The project has deployment-safe defaults for a coursework/demo deployment,
+   so it can start without adding these immediately. For a public production
+   site, set a real DJANGO_SECRET_KEY and restrict allowed hosts.
+
+6. STATIC FILES
+
+   WhiteNoise is enabled. The Docker image runs:
+       python manage.py collectstatic --noinput
+
+   CSS and JavaScript should therefore work with DEBUG=False.
+
+7. BACKGROUND REMOVAL
+
+   The Docker image pre-downloads rembg's u2netp model during Cloud Build. This
+   avoids the first user scan waiting for that model to download at runtime.
+
+8. SQLITE
+
+   db.sqlite3 can remain for this demonstration, but Cloud Run containers are
+   ephemeral. Do not rely on local SQLite for permanent user accounts, scan
+   history, or other persistent data.
+
+9. PYTORCH
+
+   The Dockerfile installs the CPU-only PyTorch/torchvision wheels before the
+   rest of requirements.txt. Cloud Run does not need CUDA for this deployment,
+   and avoiding CUDA packages keeps the container substantially smaller.

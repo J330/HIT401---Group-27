@@ -1,3 +1,123 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:dff3133801bfd9dc6df253978588dbeac5c404b2578ae7d57b5f41dab74db978
-size 3692
+DINOv2 Two-Stage Similarity Setup
+=================================
+
+Expected repository layout:
+
+HIT401---Group-27/
+  Django/
+  initialscanai/                 (legacy; no longer used by Stage 1)
+  trainedai/
+    dinov2-base/
+      dinov2_banana_disease.pth
+      dinov2_labels.json
+      initial_references.pt
+      initial_similarity_config.json
+      disease_references.pt
+      similarity_config.json
+      best_model/                (old folder can remain)
+      run_seed_42/               (can remain)
+
+STAGE 1 — Banana Leaf / Not Banana Leaf
+---------------------------------------
+
+Stage 1 now has ONLY TWO visual reference groups:
+
+  Banana Leaf
+  Not BananaLeaf
+
+It does not show or compare the five disease classes during the initial scan.
+It reuses the feature extractor from your already-trained DINOv2 disease model,
+so you do not need another 20-epoch training run.
+
+Build the Stage 1 binary reference bank once from the repository root:
+
+python Django\build_initial_references.py --dataset-root "C:\Users\jimmy\Downloads\Training\Datasets"
+
+The command expects:
+
+C:\Users\jimmy\Downloads\Training\Datasets\
+  Banana Leaf\
+    Black_Sigatoka\
+    Cordana\
+    Freckle\
+    Healthy\
+    Pestalotiopsis\
+  Not BananaLeaf\
+
+It creates:
+
+trainedai\dinov2-base\initial_references.pt
+trainedai\dinov2-base\initial_similarity_config.json
+
+For the Banana Leaf bank, the builder samples each disease/health folder
+separately so the very large Healthy folder does not dominate the references.
+
+A scan continues to Stage 2 only when:
+
+1. Banana Leaf is more similar than Not BananaLeaf.
+2. Banana Leaf reaches the configured banana_threshold.
+3. Banana Leaf beats Not BananaLeaf by at least binary_margin.
+
+STAGE 2 — Health classification
+-------------------------------
+
+Stage 2 remains:
+
+  Black_Sigatoka
+  Cordana
+  Freckle
+  Healthy
+  Pestalotiopsis
+
+If DINOv2 Base is selected for Stage 2, it also uses:
+
+trainedai\dinov2-base\disease_references.pt
+trainedai\dinov2-base\similarity_config.json
+
+To create/rebuild the Stage 2 disease reference bank:
+
+python Django\build_disease_references.py --dataset "C:\Users\jimmy\Downloads\Training\Datasets\Banana Leaf"
+
+Run Django
+----------
+
+cd Django
+python manage.py runserver
+
+Stage 1 tuning
+--------------
+
+initial_similarity_config.json contains:
+
+  banana_threshold
+  binary_margin
+  top_k
+
+Test Stage 1 with real banana leaves and hard negatives such as coconut, palm,
+heliconia, corn, sugarcane and other tropical leaves. Adjust the thresholds if
+necessary after observing false accepts/rejects.
+
+SELECTOR BEHAVIOUR
+------------------
+The Stage 2 model selector is now independent from Stage 1 readiness. If
+initial_references.pt is missing, the Stage 2 models still appear in the
+selector, but the Scan Image button stays disabled and the page tells you to
+build the Stage 1 reference bank. This prevents an empty dropdown.
+
+RESULT CARD / MODEL METRICS
+---------------------------
+Stage 1 Banana Leaf threshold is fixed at 0.65 (65%) in this project version.
+The existing binary-margin check is still used as a second Stage 1 condition.
+
+To populate Accuracy, Precision, Recall, Macro F1, Weighted F1 and per-class
+statistics on the Stage 2 result card, run this once from the repository root:
+
+python Django\evaluate_dinov2_metrics.py --dataset "C:\Users\jimmy\Downloads\Training\Datasets\Banana Leaf"
+
+This creates:
+    trainedai\dinov2-base\dinov2_metrics.json
+
+It does not retrain DINOv2. It evaluates the held-out seed-42 test split.
+If the metrics file has not been generated yet, the website will still show any
+accuracy value stored in the training checkpoint and explain that F1/precision/
+recall are not available yet.

@@ -1,3 +1,258 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:8d10dec96e6b474f1ad28ee993db318a3b05178d6189cc7dfa0f4289ce77c20d
-size 9784
+{% extends 'detector/base.html' %}
+{% load static %}
+
+{% block title %}Result &middot; Black Sigatoka Detector{% endblock %}
+
+{% block content %}
+<div class="result-page-header">
+  <h1>Scan Result</h1>
+  <a class="btn btn-primary result-rescan-btn" href="{% url 'detector:upload' %}">Scan Another Photo</a>
+</div>
+
+<div class="result-grid">
+  <div class="result-image-panel">
+    <h2>Stage 1 image views</h2>
+    <div class="stage1-image-grid">
+      <figure>
+        <figcaption>Uploaded image</figcaption>
+        <img id="result-image" alt="Uploaded leaf image">
+      </figure>
+      <figure id="filtered-image-figure" style="display:none;">
+        <figcaption>Background-filtered image</figcaption>
+        <img id="filtered-image" alt="Background-filtered image used for Stage 1">
+      </figure>
+    </div>
+    <p class="stage1-image-note" id="filtered-image-note"></p>
+  </div>
+
+  <div class="result-stack">
+    <div class="scan-stage-grid">
+      <section class="diagnosis-card stage-card stage1-card-clean" id="initial-scan-card">
+      <div class="card-heading-row">
+        <div>
+          <p class="stage-kicker">Stage 1</p>
+          <h2>Banana Leaf Validation</h2>
+        </div>
+        <span class="status-pill" id="initial-status-pill">Checking</span>
+      </div>
+
+      <p class="model-used">DINOv2 dual-view reference gate</p>
+      <p class="dual-view-note" id="dual-view-note">Original + background-filtered image</p>
+      <p class="label result-main-label" id="initial-label"></p>
+
+      <div class="confidence-bar">
+        <div class="confidence-bar-fill" id="banana-confidence-fill" style="width: 0%"></div>
+      </div>
+
+      <div class="score-summary-grid">
+        <div class="score-summary-item">
+          <span>Banana Leaf similarity</span>
+          <strong id="banana-score-value">—</strong>
+        </div>
+        <div class="score-summary-item">
+          <span>Not Banana Leaf similarity</span>
+          <strong id="not-banana-score-value">—</strong>
+        </div>
+        <div class="score-summary-item">
+          <span>Required banana threshold</span>
+          <strong id="banana-threshold-value">65%</strong>
+        </div>
+      </div>
+
+      <p class="threshold-text" id="threshold-text"></p>
+
+      <section class="stage1-breakdown-panel">
+        <div class="stage1-breakdown-grid">
+          <article class="stage1-detail-card">
+            <span class="evidence-label">Original image scores</span>
+            <div class="stage1-detail-rows">
+              <div class="stage1-detail-row"><span>Banana Leaf</span><strong id="original-banana-score">—</strong></div>
+              <div class="stage1-detail-row"><span>Not Banana Leaf</span><strong id="original-not-banana-score">—</strong></div>
+            </div>
+          </article>
+
+          <article class="stage1-detail-card" id="filtered-score-card">
+            <span class="evidence-label">Background-filtered scores</span>
+            <div class="stage1-detail-rows">
+              <div class="stage1-detail-row"><span>Banana Leaf</span><strong id="filtered-banana-score">—</strong></div>
+              <div class="stage1-detail-row"><span>Not Banana Leaf</span><strong id="filtered-not-banana-score">—</strong></div>
+            </div>
+          </article>
+        </div>
+
+        <div class="stage1-meta-grid">
+          <div class="stage1-meta-item">
+            <span>Winning group</span>
+            <strong id="stage1-best-class">—</strong>
+          </div>
+          <div class="stage1-meta-item">
+            <span>Combined margin</span>
+            <strong id="stage1-margin">—</strong>
+          </div>
+          <div class="stage1-meta-item">
+            <span>Required margin</span>
+            <strong id="stage1-required-margin">—</strong>
+          </div>
+          <div class="stage1-meta-item">
+            <span>Filter method</span>
+            <strong id="stage1-filter-method">—</strong>
+          </div>
+        </div>
+
+        <details class="result-details stage1-details">
+          <summary>Stage 1 diagnostic details</summary>
+          <div class="probability-panel compact-panel">
+            <div id="stage1-probability-list"></div>
+            <p class="threshold-text" id="stage1-filter-reason"></p>
+          </div>
+        </details>
+      </section>
+
+    </section>
+
+      <section class="diagnosis-card stage-card" id="health-scan-card">
+      <div class="card-heading-row">
+        <div>
+          <p class="stage-kicker">Stage 2</p>
+          <h2>Leaf Health Analysis</h2>
+        </div>
+        <span class="status-pill" id="health-status-pill">Analysing</span>
+      </div>
+
+      <p class="model-used">Analysed by <strong id="result-model"></strong></p>
+
+      <div class="final-result-box" id="final-result-box">
+        <span class="final-result-caption">Final result</span>
+        <p class="label result-main-label" id="result-label"></p>
+        <p class="final-result-explanation" id="final-result-explanation"></p>
+      </div>
+
+      <div class="evidence-grid">
+        <article class="evidence-card">
+          <span class="evidence-label">Classifier choice</span>
+          <strong id="classifier-choice-value">—</strong>
+          <span id="classifier-confidence-value">—</span>
+        </article>
+        <article class="evidence-card" id="reference-evidence-card">
+          <span class="evidence-label">Closest verified reference</span>
+          <strong id="reference-choice-value">—</strong>
+          <span id="reference-score-value">—</span>
+        </article>
+      </div>
+
+      <div class="decision-panel" id="decision-panel" style="display:none;">
+        <h3>Reliability checks</h3>
+        <div id="decision-check-list" class="decision-check-list"></div>
+        <div id="rejection-reasons" class="rejection-reasons"></div>
+      </div>
+
+      <details class="result-details" open>
+        <summary>Classifier probabilities</summary>
+        <div class="probability-panel compact-panel" id="probability-panel">
+          <div id="probability-list"></div>
+        </div>
+      </details>
+
+      <details class="result-details" id="similarity-details" style="display:none;">
+        <summary>Reference similarity details</summary>
+        <div class="probability-panel compact-panel" id="similarity-panel">
+          <p id="similarity-summary"></p>
+          <div id="similarity-list"></div>
+          <p class="threshold-text" id="similarity-threshold-text"></p>
+          <p class="threshold-text" id="similarity-margin-text"></p>
+        </div>
+      </details>
+
+      <section class="metrics-panel" id="metrics-panel" style="display:none;">
+        <div class="metrics-heading">
+          <div>
+            <p class="stage-kicker">Model evaluation</p>
+            <h3>Test-set statistics</h3>
+          </div>
+          <span class="metrics-test-size" id="metrics-test-size"></span>
+        </div>
+
+        <div class="metrics-grid" id="metrics-grid"></div>
+        <p class="metrics-note" id="metrics-note"></p>
+
+        <details class="result-details" id="per-class-metrics-details" style="display:none;">
+          <summary>Show per-class F1 / precision / recall</summary>
+          <div class="metrics-table-wrap">
+            <table class="metrics-table">
+              <thead>
+                <tr>
+                  <th>Class</th>
+                  <th>Precision</th>
+                  <th>Recall</th>
+                  <th>F1</th>
+                  <th>Support</th>
+                </tr>
+              </thead>
+              <tbody id="per-class-metrics-body"></tbody>
+            </table>
+          </div>
+        </details>
+      </section>
+
+      <p id="next-steps" class="next-steps"></p>
+      </section>
+
+      <section class="diagnosis-card rejection-card" id="rejection-card" style="display:none;">
+      <p class="stage-kicker">Stage 2 not run</p>
+      <h2>Image did not pass Banana Leaf validation</h2>
+      <p>
+        Stage 1 did not reach the 65% Banana Leaf similarity threshold or did
+        not clearly beat the Not Banana Leaf reference group. Try a clearer,
+        closer image of a banana leaf.
+      </p>
+      </section>
+    </div>
+  </div>
+</div>
+
+<section id="heatmap-section" class="heatmap-section" style="display:none;">
+  <div class="heatmap-heading">
+    <div>
+      <p class="stage-kicker">Explainability</p>
+      <h2>What the health AI focused on</h2>
+    </div>
+    <span class="heatmap-badge" id="heatmap-method">Grad-CAM</span>
+  </div>
+
+  <p class="heatmap-copy">
+    Warmer highlighted regions contributed more strongly to the classifier's
+    highest-scoring class. The overlay uses contrast-normalised transformer
+    Grad-CAM where available so important patch regions are easier to see. It
+    explains the classifier choice; it does not override a failed reliability check.
+  </p>
+
+  <div class="heatmap-comparison">
+    <figure>
+      <figcaption>Original</figcaption>
+      <img id="heatmap-original" alt="Original uploaded leaf">
+    </figure>
+    <figure>
+      <figcaption>AI attention overlay</figcaption>
+      <img id="heatmap-image" alt="Grad-CAM attention heatmap overlay">
+    </figure>
+  </div>
+
+  <div class="heatmap-legend" aria-label="Heatmap legend">
+    <span>Lower influence</span>
+    <span class="heatmap-gradient" aria-hidden="true"></span>
+    <span>Higher influence</span>
+  </div>
+  <p class="heatmap-target" id="heatmap-target"></p>
+</section>
+
+<section id="heatmap-error-section" class="heatmap-error" style="display:none;">
+  <strong>Heatmap unavailable.</strong>
+  <span id="heatmap-error-text"></span>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>window.UPLOAD_URL = "{% url 'detector:upload' %}";</script>
+<script src="{% static 'detector/js/result_v4.js' %}"></script>
+{% endblock %}

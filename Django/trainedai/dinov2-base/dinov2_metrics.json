@@ -1,3 +1,93 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d5ced3a96eff80e6288a2d1d163a7bb16c7a41b9f6d92a13029a3b34b431f15e
-size 2316
+{
+    "model": "DINOv2 Base",
+    "model_name": "vit_base_patch14_dinov2.lvd142m",
+    "dataset": "C:\\Users\\jimmy\\Downloads\\Training\\Datasets\\Banana Leaf",
+    "split": "10% held-out stratified test set",
+    "seed": 42,
+    "test_size": 304,
+    "accuracy": 0.9967105263157895,
+    "balanced_accuracy": 0.9973333333333333,
+    "macro_precision": 0.9987341772151899,
+    "macro_recall": 0.9973333333333333,
+    "macro_f1": 0.9980227974858847,
+    "weighted_precision": 0.996731345769487,
+    "weighted_recall": 0.9967105263157895,
+    "weighted_f1": 0.996704709200294,
+    "classes": [
+        "Black_Sigatoka",
+        "Cordana",
+        "Freckle",
+        "Healthy",
+        "Pestalotiopsis"
+    ],
+    "per_class": {
+        "Black_Sigatoka": {
+            "precision": 1.0,
+            "recall": 0.9866666666666667,
+            "f1": 0.9932885906040269,
+            "support": 75
+        },
+        "Cordana": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 16
+        },
+        "Freckle": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 39
+        },
+        "Healthy": {
+            "precision": 0.9936708860759493,
+            "recall": 1.0,
+            "f1": 0.9968253968253968,
+            "support": 157
+        },
+        "Pestalotiopsis": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 17
+        }
+    },
+    "confusion_matrix": [
+        [
+            74,
+            0,
+            0,
+            1,
+            0
+        ],
+        [
+            0,
+            16,
+            0,
+            0,
+            0
+        ],
+        [
+            0,
+            0,
+            39,
+            0,
+            0
+        ],
+        [
+            0,
+            0,
+            0,
+            157,
+            0
+        ],
+        [
+            0,
+            0,
+            0,
+            0,
+            17
+        ]
+    ],
+    "note": "Metrics are measured on the recreated seed-42 stratified test split. If the dataset has changed since training, rerun evaluation and interpret the values as performance on the current dataset split."
+}

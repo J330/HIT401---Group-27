@@ -1,3 +1,38 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:124d8aadc1523fa82795f854a4ba5fd2bdac8328dc65a474f39534f96b9e9cfc
-size 1134
+{% extends 'detector/base.html' %}
+
+{% block title %}Black Sigatoka Detector{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <h1>Detect Black Sigatoka from a leaf photo</h1>
+  <p>
+    Black Sigatoka is a notifiable fungal disease under active
+    biosecurity surveillance in northern Australia. Upload a photo
+    of a banana leaf and get an instant machine learning assessment
+    to support early detection.
+  </p>
+  <a class="btn btn-primary" href="{% url 'detector:upload' %}">Upload a Leaf Photo &rarr;</a>
+</section>
+
+<section>
+  <h2>How it works</h2>
+  <ol class="steps">
+    <li>
+      <span class="step-number">1</span>
+      <strong>Upload a photo</strong>
+      <p>Choose a clear, well-lit photo of a single banana leaf.</p>
+    </li>
+    <li>
+      <span class="step-number">2</span>
+      <strong>The model analyses it</strong>
+      <p>A trained image classification model checks for symptoms.</p>
+    </li>
+    <li>
+      <span class="step-number">3</span>
+      <strong>Get your result</strong>
+      <p>See the diagnosis, confidence score, and next steps.</p>
+    </li>
+  </ol>
+</section>
+
+{% endblock %}

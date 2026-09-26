@@ -1,3 +1,16 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:b2735d6c7fc8f757454c2b63430db2746e0c2ecaab76eae53c77bcc22acf21a5
-size 391
+"""
+ASGI config for website project.
+
+It exposes the ASGI callable as a module-level variable named ``application``.
+
+For more information on this file, see
+https://docs.djangoproject.com/en/4.2/howto/deployment/asgi/
+"""
+
+import os
+
+from django.core.asgi import get_asgi_application
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'website.settings')
+
+application = get_asgi_application()

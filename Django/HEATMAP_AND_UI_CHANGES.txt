@@ -1,3 +1,8 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d69445eb38a9f4a97728d9e1de484f002f426867fedd533bd930ef82295ad29f
-size 672
+Changes in this build
+
+- DINOv2 heatmap now targets the final transformer's norm1 layer before attention, which preserves spatial patch gradients for Transformer Grad-CAM.
+- Heatmap display uses 5th-97th percentile contrast normalisation, gamma expansion, and stronger overlay opacity so meaningful regions are easier to see.
+- Input-gradient saliency remains an automatic fallback if Transformer Grad-CAM cannot be produced.
+- The Scan Image button is now beside the Analyse a Leaf heading, matching the Scan Another Photo button position on the result page.
+- The About page and navigation item were removed.
+- The Why it matters section was removed from the home page.

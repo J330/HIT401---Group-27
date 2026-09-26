@@ -1,3 +1,4 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:c258984b4e094ab01b1769b602ac853045282cd9d9fae202158fa1b94af65810
-size 259
+ConvNeXtV2 and EfficientNetV2 support has been removed.
+The project now uses only trainedai/dinov2-base for both stages.
+The upload page no longer presents a health-model selector.
+The transformers Python package is no longer required by this Django project.
