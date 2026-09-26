@@ -1,4 +1,7 @@
 steps:
+  # ---------------------------------------------------------
+  # 1. Download the real AI model files from Git LFS
+  # ---------------------------------------------------------
   - name: 'ubuntu:24.04'
     entrypoint: 'bash'
     args:
@@ -6,41 +9,62 @@ steps:
       - |
         set -e
 
+        echo "Installing Git LFS..."
         apt-get update
         apt-get install -y git git-lfs
 
         git lfs install
 
+        echo "Downloading trained AI files from Git LFS..."
         git lfs fetch \
           --include="Django/trainedai/**" \
           origin "$COMMIT_SHA"
 
         git lfs checkout
 
-        echo "Checking AI files..."
-
+        echo "AI files after Git LFS checkout:"
         ls -lh Django/trainedai/dinov2-base
-        ls -lh Django/trainedai/dinov2-base/best_model
+        ls -lh Django/trainedai/dinov2-base/best_model || true
 
-        # These must NOT be Git LFS pointer files
-        if grep -q "git-lfs.github.com/spec" Django/trainedai/dinov2-base/dinov2_banana_disease.pth; then
-          echo "ERROR: dinov2_banana_disease.pth is still an LFS pointer"
+        echo "Checking that AI files are real binaries..."
+
+        if grep -aq "git-lfs.github.com/spec" Django/trainedai/dinov2-base/dinov2_banana_disease.pth; then
+          echo "ERROR: dinov2_banana_disease.pth is still a Git LFS pointer"
           exit 1
         fi
 
-        if grep -q "git-lfs.github.com/spec" Django/trainedai/dinov2-base/initial_references.pt; then
-          echo "ERROR: initial_references.pt is still an LFS pointer"
+        if grep -aq "git-lfs.github.com/spec" Django/trainedai/dinov2-base/initial_references.pt; then
+          echo "ERROR: initial_references.pt is still a Git LFS pointer"
           exit 1
         fi
 
-        if grep -q "git-lfs.github.com/spec" Django/trainedai/dinov2-base/disease_references.pt; then
-          echo "ERROR: disease_references.pt is still an LFS pointer"
+        if grep -aq "git-lfs.github.com/spec" Django/trainedai/dinov2-base/disease_references.pt; then
+          echo "ERROR: disease_references.pt is still a Git LFS pointer"
           exit 1
         fi
 
-        # The main checkpoint should be hundreds of MB
-        test "$(stat -c%s Django/trainedai/dinov2-base/dinov2_banana_disease.pth)" -gt 100000000
+        if grep -aq "git-lfs.github.com/spec" Django/trainedai/dinov2-base/best_model/model.safetensors; then
+          echo "ERROR: model.safetensors is still a Git LFS pointer"
+          exit 1
+        fi
 
+        echo "Checking main model size..."
+
+        MODEL_SIZE=$(stat -c%s Django/trainedai/dinov2-base/dinov2_banana_disease.pth)
+
+        echo "dinov2_banana_disease.pth size: $MODEL_SIZE bytes"
+
+        if [ "$MODEL_SIZE" -lt 100000000 ]; then
+          echo "ERROR: AI model is unexpectedly small"
+          exit 1
+        fi
+
+        echo "Git LFS AI files successfully downloaded."
+
+
+  # ---------------------------------------------------------
+  # 2. Build the Docker image
+  # ---------------------------------------------------------
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
@@ -50,6 +74,10 @@ steps:
       - 'Django/Dockerfile'
       - 'Django'
 
+
+  # ---------------------------------------------------------
+  # 3. Verify the real AI models are inside the Docker image
+  # ---------------------------------------------------------
   - name: 'gcr.io/cloud-builders/docker'
     entrypoint: 'docker'
     args:
@@ -60,19 +88,66 @@ steps:
       - 'gcr.io/$PROJECT_ID/github.com/j330/hit401---group-27:$COMMIT_SHA'
       - '-c'
       - |
-        echo "Checking AI files inside final Docker image"
+        set -e
 
+        echo "AI files inside final Docker image:"
         ls -lh /app/trainedai/dinov2-base
+        ls -lh /app/trainedai/dinov2-base/best_model || true
 
-        if grep -q "git-lfs.github.com/spec" /app/trainedai/dinov2-base/dinov2_banana_disease.pth; then
-          echo "ERROR: Docker image contains LFS pointer instead of AI model"
+        if grep -aq "git-lfs.github.com/spec" /app/trainedai/dinov2-base/dinov2_banana_disease.pth; then
+          echo "ERROR: Docker image contains LFS pointer for dinov2_banana_disease.pth"
           exit 1
         fi
 
-        test "$(stat -c%s /app/trainedai/dinov2-base/dinov2_banana_disease.pth)" -gt 100000000
+        if grep -aq "git-lfs.github.com/spec" /app/trainedai/dinov2-base/initial_references.pt; then
+          echo "ERROR: Docker image contains LFS pointer for initial_references.pt"
+          exit 1
+        fi
 
-images:
-  - 'gcr.io/$PROJECT_ID/github.com/j330/hit401---group-27:$COMMIT_SHA'
+        if grep -aq "git-lfs.github.com/spec" /app/trainedai/dinov2-base/disease_references.pt; then
+          echo "ERROR: Docker image contains LFS pointer for disease_references.pt"
+          exit 1
+        fi
 
+        MODEL_SIZE=$(stat -c%s /app/trainedai/dinov2-base/dinov2_banana_disease.pth)
+
+        echo "Model inside Docker image: $MODEL_SIZE bytes"
+
+        if [ "$MODEL_SIZE" -lt 100000000 ]; then
+          echo "ERROR: AI model inside Docker image is too small"
+          exit 1
+        fi
+
+        echo "AI model verification inside Docker image PASSED."
+
+
+  # ---------------------------------------------------------
+  # 4. Push the verified Docker image
+  # ---------------------------------------------------------
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/github.com/j330/hit401---group-27:$COMMIT_SHA'
+
+
+  # ---------------------------------------------------------
+  # 5. Deploy THAT exact new image to Cloud Run
+  # ---------------------------------------------------------
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'b-leaf-ai'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/github.com/j330/hit401---group-27:$COMMIT_SHA'
+      - '--region'
+      - 'europe-west1'
+      - '--platform'
+      - 'managed'
+      - '--quiet'
+
+
+# Required because your Cloud Build trigger uses a custom service account
 options:
   logging: CLOUD_LOGGING_ONLY
