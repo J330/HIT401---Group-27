@@ -1,0 +1,53 @@
+steps:
+  # Download the real Git LFS AI files
+  - name: 'ubuntu:24.04'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        apt-get update
+        apt-get install -y git git-lfs
+
+        git lfs install
+
+        git lfs pull \
+          --include="Django/trainedai/**" \
+          --exclude=""
+
+        echo "Checking AI files..."
+
+        ls -lh Django/trainedai/dinov2-base
+        ls -lh Django/trainedai/dinov2-base/best_model
+
+        # Fail the build if the 330 MB model is still only an LFS pointer
+        test "$(stat -c%s Django/trainedai/dinov2-base/best_model/model.safetensors)" -gt 100000000
+
+  # Build Django container
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/github.com/j330/hit401---group-27:$COMMIT_SHA'
+      - '-f'
+      - 'Django/Dockerfile'
+      - 'Django'
+
+  # Verify the AI actually made it INTO the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'docker'
+    args:
+      - 'run'
+      - '--rm'
+      - '--entrypoint'
+      - 'sh'
+      - 'gcr.io/$PROJECT_ID/github.com/j330/hit401---group-27:$COMMIT_SHA'
+      - '-c'
+      - |
+        echo "AI files inside container:"
+        ls -lh /app/trainedai/dinov2-base
+        ls -lh /app/trainedai/dinov2-base/best_model
+
+        test "$(stat -c%s /app/trainedai/dinov2-base/best_model/model.safetensors)" -gt 100000000
+
+images:
+  - 'gcr.io/$PROJECT_ID/github.com/j330/hit401---group-27:$COMMIT_SHA'
