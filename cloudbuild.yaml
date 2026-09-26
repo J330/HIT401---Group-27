@@ -1,28 +1,46 @@
 steps:
-  # Download the real Git LFS AI files
   - name: 'ubuntu:24.04'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
+        set -e
+
         apt-get update
         apt-get install -y git git-lfs
 
         git lfs install
 
-        git lfs pull \
+        git lfs fetch \
           --include="Django/trainedai/**" \
-          --exclude=""
+          origin "$COMMIT_SHA"
+
+        git lfs checkout
 
         echo "Checking AI files..."
 
         ls -lh Django/trainedai/dinov2-base
         ls -lh Django/trainedai/dinov2-base/best_model
 
-        # Fail the build if the 330 MB model is still only an LFS pointer
-        test "$(stat -c%s Django/trainedai/dinov2-base/best_model/model.safetensors)" -gt 100000000
+        # These must NOT be Git LFS pointer files
+        if grep -q "git-lfs.github.com/spec" Django/trainedai/dinov2-base/dinov2_banana_disease.pth; then
+          echo "ERROR: dinov2_banana_disease.pth is still an LFS pointer"
+          exit 1
+        fi
 
-  # Build Django container
+        if grep -q "git-lfs.github.com/spec" Django/trainedai/dinov2-base/initial_references.pt; then
+          echo "ERROR: initial_references.pt is still an LFS pointer"
+          exit 1
+        fi
+
+        if grep -q "git-lfs.github.com/spec" Django/trainedai/dinov2-base/disease_references.pt; then
+          echo "ERROR: disease_references.pt is still an LFS pointer"
+          exit 1
+        fi
+
+        # The main checkpoint should be hundreds of MB
+        test "$(stat -c%s Django/trainedai/dinov2-base/dinov2_banana_disease.pth)" -gt 100000000
+
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
@@ -32,7 +50,6 @@ steps:
       - 'Django/Dockerfile'
       - 'Django'
 
-  # Verify the AI actually made it INTO the Docker image
   - name: 'gcr.io/cloud-builders/docker'
     entrypoint: 'docker'
     args:
@@ -43,11 +60,16 @@ steps:
       - 'gcr.io/$PROJECT_ID/github.com/j330/hit401---group-27:$COMMIT_SHA'
       - '-c'
       - |
-        echo "AI files inside container:"
-        ls -lh /app/trainedai/dinov2-base
-        ls -lh /app/trainedai/dinov2-base/best_model
+        echo "Checking AI files inside final Docker image"
 
-        test "$(stat -c%s /app/trainedai/dinov2-base/best_model/model.safetensors)" -gt 100000000
+        ls -lh /app/trainedai/dinov2-base
+
+        if grep -q "git-lfs.github.com/spec" /app/trainedai/dinov2-base/dinov2_banana_disease.pth; then
+          echo "ERROR: Docker image contains LFS pointer instead of AI model"
+          exit 1
+        fi
+
+        test "$(stat -c%s /app/trainedai/dinov2-base/dinov2_banana_disease.pth)" -gt 100000000
 
 images:
   - 'gcr.io/$PROJECT_ID/github.com/j330/hit401---group-27:$COMMIT_SHA'
