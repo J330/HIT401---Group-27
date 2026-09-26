@@ -51,3 +51,6 @@ steps:
 
 images:
   - 'gcr.io/$PROJECT_ID/github.com/j330/hit401---group-27:$COMMIT_SHA'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
