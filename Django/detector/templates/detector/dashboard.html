@@ -1,0 +1,221 @@
+{% extends 'detector/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard &middot; Black Sigatoka Detector{% endblock %}
+
+{% block content %}
+<section class="dashboard-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Leaf health check</p>
+      <h1>Scan history</h1>
+    </div>
+    <p class="user-status">History for this browser session</p>
+  </header>
+
+  <div class="summary-row">
+    <div class="summary-card">
+      <p class="summary-number">{{ total_scans }}</p>
+      <p class="summary-label">total scans</p>
+    </div>
+    <div class="summary-card healthy">
+      <p class="summary-number">{{ healthy_scans }}</p>
+      <p class="summary-label">healthy</p>
+    </div>
+    <div class="summary-card diseased">
+      <p class="summary-number">{{ diseased_scans }}</p>
+      <p class="summary-label">diseased</p>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- Left Column: Recent Scans -->
+    <div class="dashboard-scans">
+      <div class="divider">recent scans</div>
+
+      <table class="scan-table">
+        <thead>
+          <tr>
+            <th class="col-image">Image</th>
+            <th class="col-status">Status</th>
+            <th class="col-detail">Detail</th>
+            <th class="col-confidence">Confidence</th>
+            <th class="col-date">Date</th>
+            <th class="col-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for prediction in predictions %}
+          <tr class="scan-row" data-scan-id="{{ prediction.id }}" data-result='{{ prediction.result|escapejs }}'>
+            <td class="col-image">
+              {% if forloop.first %}
+              <img class="scan-image client-scan-image" alt="Latest uploaded leaf scan" hidden>
+              <span class="muted-text client-scan-unavailable">Image unavailable</span>
+              {% else %}
+              <span class="muted-text">Not stored</span>
+              {% endif %}
+            </td>
+            <td class="col-status">
+              {% if prediction.label == 'healthy' %}
+              <span class="status-pill healthy">Healthy</span>
+              {% else %}
+              <span class="status-pill diseased">Black Sigatoka</span>
+              {% endif %}
+            </td>
+            <td class="col-detail">
+              {% if prediction.label == 'healthy' %}
+              No visible lesions, spotting, or discoloration.
+              {% else %}
+              Black Sigatoka detected.
+              {% endif %}
+            </td>
+            <td class="col-confidence">{% widthratio prediction.confidence 1 100 %}%</td>
+            <td class="col-date">{{ prediction.created_at|date:'M d, Y' }}</td>
+            <td class="col-actions">
+              <div class="scan-actions">
+                <form method="post" action="{% url 'detector:delete_scan' prediction.id %}" class="delete-scan-form">
+                  {% csrf_token %}
+                  <button class="btn btn-secondary btn-delete" type="submit">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6">No scans yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Right Column: Disease Distribution & Selected Scan -->
+    <div class="dashboard-sidebar">
+      <!-- Disease Distribution -->
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Disease distribution</h3>
+        <p class="sidebar-subtitle">Share of flagged scans by condition, all-time.</p>
+        
+        {% if disease_distribution %}
+          <div class="distribution-list">
+            {% for item in disease_distribution %}
+            <div class="distribution-item">
+              <span class="dist-label">{{ item.name }}</span>
+              <span class="dist-pct">{{ item.pct }}%</span>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="muted-text">No disease history recorded yet.</p>
+        {% endif %}
+      </div>
+
+      <!-- Selected Scan Details -->
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Selected scan</h3>
+        
+        <div id="scan-details" class="scan-details">
+          <p class="muted-text">Select a scan from the list to view its analysis.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const scanRows = document.querySelectorAll('.scan-row');
+  const scanDetails = document.getElementById('scan-details');
+  
+  scanRows.forEach(row => {
+    row.addEventListener('click', function() {
+      // Remove active class from all rows
+      scanRows.forEach(r => r.classList.remove('active'));
+      // Add active class to clicked row
+      this.classList.add('active');
+      
+      // Get scan data from row
+      const scanId = this.dataset.scanId;
+      const label = this.querySelector('.status-pill').textContent.trim();
+      const confidence = this.querySelector('.col-confidence').textContent.trim();
+      const detail = this.querySelector('.col-detail').textContent.trim();
+      
+      // Get full result data
+      let resultData = {};
+      try {
+        resultData = JSON.parse(this.dataset.result);
+      } catch (e) {
+        console.error('Failed to parse result data:', e);
+      }
+      
+      // Display scan details
+      displayScanDetails(label, confidence, detail, resultData);
+    });
+  });
+  
+  function displayScanDetails(label, confidence, detail, resultData) {
+    // Build probabilities display from all disease classes
+    let probabilitiesHtml = '';
+    
+    if (resultData.health_scan) {
+      if (resultData.health_scan.probabilities) {
+        const probs = resultData.health_scan.probabilities;
+        
+        // Convert to array and sort by probability (highest first)
+        const sortedProbs = Object.entries(probs)
+          .map(([name, value]) => ({ name, value: parseFloat(value) }))
+          .sort((a, b) => b.value - a.value);
+        
+        // Build HTML for each probability
+        sortedProbs.forEach(({ name, value }) => {
+          const pct = Math.round(value * 100);
+          const prettyName = name
+            .split('_')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+          
+          probabilitiesHtml += `
+            <div class="prob-item">
+              <span class="prob-label">${prettyName}</span>
+              <div class="prob-bar-bg">
+                <div class="prob-bar-fill" style="width: ${pct}%"></div>
+              </div>
+              <span class="prob-value">${pct}%</span>
+            </div>
+          `;
+        });
+      }
+    }
+    
+    const html = `
+      <div class="scan-detail-content">
+        <div class="detail-section">
+          <h4>Stage 1: Validation</h4>
+          <ul class="detail-list">
+            <li>
+              <span class="detail-label">Banana leaf</span>
+              <span class="detail-value">✓ Recognized</span>
+            </li>
+          </ul>
+        </div>
+        
+        <div class="detail-section">
+          <h4>Stage 2: Leaf health analysis</h4>
+          <p>${detail}</p>
+        </div>
+        
+        <div class="detail-section">
+          <h4>Classifier probabilities</h4>
+          <div class="probability-bar">
+            ${probabilitiesHtml || '<p style="color: #999; font-size: 0.9em;">Probabilities not available for this scan. <a href="https://developer.chrome.com/docs/devtools/console/" target="_blank">Check browser console</a> for details.</p>'}
+          </div>
+        </div>
+        
+        <button class="btn btn-primary download-report" style="width: 100%; margin-top: 1rem;">Download report</button>
+      </div>
+    `;
+    scanDetails.innerHTML = html;
+  }
+});
+</script>
+{% endblock %}

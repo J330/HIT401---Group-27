@@ -10,23 +10,33 @@ from urllib.request import (
 )
 
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from .inference import (
+from .exceptions import (
     InvalidImageError,
     ModelNotAvailableError,
     PredictionError,
+)
+from .inference import (
     get_model_choices,
+    initial_scan_ai_root,
     predict_two_stage,
     trained_ai_root,
 )
+from .models import ScanHistory
 
 logger = logging.getLogger(__name__)
 
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 REMOTE_IMAGE_TIMEOUT_SECONDS = 12
 MAX_REDIRECTS = 5
+
+
+def get_session_key(request):
+    if not request.session.session_key:
+        request.session.create()
+    return request.session.session_key
 
 
 def home(request):
@@ -49,12 +59,57 @@ def upload(request):
             ),
             "initial_scan_available": initial_scan_available,
             "trained_ai_root": trained_ai_root(),
+            "initial_scan_ai_root": initial_scan_ai_root(),
         },
     )
 
 
 def result(request):
     return render(request, "detector/result.html", {"active_page": "result"})
+
+
+def about(request):
+    return render(request, "detector/about.html", {"active_page": "about"})
+
+
+def dashboard(request):
+    session_key = get_session_key(request)
+    predictions = list(ScanHistory.objects.filter(session_key=session_key).order_by('-created_at'))
+    healthy_scans = sum(1 for prediction in predictions if prediction.label == 'healthy')
+    diseased_scans = sum(1 for prediction in predictions if prediction.label == 'black_sigatoka')
+    
+    # Calculate disease distribution percentages
+    total = len(predictions)
+    disease_distribution = []
+    if total > 0:
+        healthy_pct = round((healthy_scans / total) * 100)
+        diseased_pct = round((diseased_scans / total) * 100)
+        disease_distribution = [
+            {'name': 'Healthy', 'pct': healthy_pct},
+            {'name': 'Black Sigatoka', 'pct': diseased_pct},
+        ]
+
+    return render(
+        request,
+        'detector/dashboard.html',
+        {
+            'active_page': 'dashboard',
+            'total_scans': len(predictions),
+            'healthy_scans': healthy_scans,
+            'diseased_scans': diseased_scans,
+            'predictions': predictions,
+            'disease_distribution': disease_distribution,
+            'request': request,
+        },
+    )
+
+
+@require_POST
+def delete_scan(request, scan_id):
+    session_key = get_session_key(request)
+    scan = get_object_or_404(ScanHistory, pk=scan_id, session_key=session_key)
+    scan.delete()
+    return redirect('detector:dashboard')
 
 
 def _validate_public_http_url(url: str) -> str:
@@ -183,11 +238,27 @@ def predict_api(request):
         )
 
         prediction = predict_two_stage(image_source, model_key)
+        session_key = get_session_key(request)
+        
+        # Only save successful scans (stage 1 accepted)
+        health_scan = prediction.get('health_scan')
+        if health_scan:
+            label = health_scan.get('label') or 'unknown'
+            confidence = float(health_scan.get('confidence', 0.0) or 0.0)
+            ScanHistory.objects.create(
+                session_key=session_key,
+                label=label,
+                confidence=confidence,
+                result=prediction,
+            )
+        
         return JsonResponse(prediction)
 
     except InvalidImageError as error:
         return JsonResponse({"error": str(error)}, status=400)
     except ModelNotAvailableError as error:
+        return JsonResponse({"error": str(error)}, status=503)
+    except ModelRuntimeError as error:
         return JsonResponse({"error": str(error)}, status=503)
     except PredictionError as error:
         return JsonResponse({"error": str(error)}, status=400)

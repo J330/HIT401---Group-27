@@ -1062,3 +1062,489 @@ main {
     grid-template-columns: 1fr;
   }
 }
+
+.dashboard-page {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 2rem 1.5rem;
+}
+
+/* ---------- Dashboard page ---------- */
+
+.page-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.eyebrow {
+  margin: 0 0 0.3rem;
+  color: var(--color-accent);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.user-status {
+  margin: 0;
+  color: #4b4d41;
+}
+
+.summary-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.summary-card {
+  background: #f4f1e8;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.summary-card.healthy {
+  background: #edf7ee;
+}
+
+.summary-card.diseased {
+  background: #fff3f3;
+}
+
+.summary-number {
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  margin: 0;
+  font-weight: 700;
+}
+
+.summary-label {
+  margin: 0.3rem 0 0;
+  text-transform: lowercase;
+  color: #5a594c;
+}
+
+.divider {
+  margin: 1.5rem 0 1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.scan-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.scan-table th,
+.scan-table td {
+  text-align: left;
+  padding: 0.9rem 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+
+.scan-table thead {
+  background: #f5f1e8;
+}
+
+.scan-image {
+  max-width: 120px;
+  max-height: 84px;
+  display: block;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+}
+
+.scan-preview {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.scan-preview:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.scan-preview:hover .scan-image {
+  border-color: var(--color-accent);
+}
+
+.muted-text {
+  color: #77776c;
+  font-size: 0.85rem;
+}
+
+.delete-scan-form {
+  margin: 0;
+  display: inline;
+}
+
+.scan-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn-view {
+  padding: 0.45rem 0.7rem;
+}
+
+.btn-delete {
+  padding: 0.45rem 0.7rem;
+  color: var(--color-danger);
+}
+
+.scan-modal[hidden] {
+  display: none;
+}
+
+.scan-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+}
+
+.scan-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgb(32 35 24 / 62%);
+}
+
+.scan-modal-content {
+  position: relative;
+  width: min(620px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  padding: 1.5rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.scan-modal-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.9rem;
+  border: 0;
+  background: transparent;
+  color: var(--color-ink);
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modal-scan-image {
+  display: block;
+  width: 100%;
+  max-height: 55vh;
+  object-fit: contain;
+  margin-top: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.scan-modal-details {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 1.25rem 0 0;
+}
+
+.scan-modal-details dt {
+  color: #626257;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.scan-modal-details dd {
+  margin: 0.2rem 0 0;
+  font-weight: 700;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.status-pill.healthy {
+  background: #e9f8ee;
+  color: #1f5f32;
+}
+
+.status-pill.diseased {
+  background: #fbeaea;
+  color: #8a2f2f;
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-primary);
+}
+
+.btn-secondary:hover {
+  background: #f7f3eb;
+}
+
+/* Dashboard Grid Layout */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+.dashboard-scans {
+  /* Left column - scans table */
+}
+
+.dashboard-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Sidebar Sections */
+.sidebar-section {
+  background: #f9f8f5;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+
+.sidebar-title {
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.sidebar-subtitle {
+  margin: 0 0 1rem;
+  font-size: 0.8rem;
+  color: #626257;
+}
+
+/* Disease Distribution */
+.distribution-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.distribution-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.dist-label {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.dist-pct {
+  font-weight: 700;
+  color: var(--color-accent);
+  min-width: 35px;
+  text-align: right;
+}
+
+/* Scan Details */
+.scan-details {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 1rem;
+  min-height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scan-detail-content {
+  width: 100%;
+}
+
+.detail-section {
+  margin-bottom: 1.25rem;
+}
+
+.detail-section h4 {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.detail-section p {
+  margin: 0;
+  color: var(--color-ink);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.detail-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.detail-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background: #f9f8f5;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.detail-value {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+/* Probability Bars */
+.probability-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.prob-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.prob-label {
+  min-width: 80px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.prob-bar-bg {
+  flex: 1;
+  height: 24px;
+  background: #efefef;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.prob-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent) 0%, #c1802f 100%);
+  transition: width 0.3s ease;
+}
+
+.prob-value {
+  min-width: 40px;
+  text-align: right;
+  font-weight: 700;
+  color: var(--color-accent);
+  font-size: 0.85rem;
+}
+
+/* Row Selection */
+.scan-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.scan-row:hover {
+  background-color: #f9f8f5;
+}
+
+.scan-row.active {
+  background-color: #edf7ee;
+  border-left: 3px solid var(--color-accent);
+}
+
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .scan-modal-details {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .summary-row {
+    grid-template-columns: 1fr;
+  }
+
+  .scan-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .scan-modal-details {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .scan-row.active {
+    border-left-width: 0;
+    border-top: 3px solid var(--color-accent);
+  }
+}
+
+/* ---------- About page ---------- */
+
+.about-section {
+  margin-bottom: 2.5rem;
+}
+
+.about-section h2 {
+  border-bottom: 2px solid var(--color-accent);
+  display: inline-block;
+  padding-bottom: 0.2rem;
+}

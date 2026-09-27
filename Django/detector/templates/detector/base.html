@@ -14,6 +14,8 @@
     <nav class="site-nav">
       <a href="{% url 'detector:home' %}" {% if active_page == 'home' %}aria-current="page"{% endif %}>Home</a>
       <a href="{% url 'detector:upload' %}" {% if active_page == 'upload' %}aria-current="page"{% endif %}>Upload</a>
+      <a href="{% url 'detector:dashboard' %}" {% if active_page == 'dashboard' %}aria-current="page"{% endif %}>Dashboard</a>
+      <a href="{% url 'detector:about' %}" {% if active_page == 'about' %}aria-current="page"{% endif %}>About</a>
     </nav>
   </header>
 

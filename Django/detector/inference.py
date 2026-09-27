@@ -41,6 +41,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 from torchvision import transforms
 
 from .background_filter import make_background_filtered_view
+from .exceptions import InvalidImageError, ModelNotAvailableError, PredictionError
 from .gradcam import generate_gradcam_data_url
 
 
@@ -79,18 +80,6 @@ DINOV2_INITIAL_CONFIG_NAME = "initial_similarity_config.json"
 DINOV2_METRICS_NAME = "dinov2_metrics.json"
 
 logger = logging.getLogger(__name__)
-
-
-class PredictionError(Exception):
-    """Base class for user-facing prediction errors."""
-
-
-class ModelNotAvailableError(PredictionError):
-    """Raised when required trained model files cannot be found."""
-
-
-class InvalidImageError(PredictionError):
-    """Raised when an uploaded file cannot be decoded as an image."""
 
 
 @dataclass

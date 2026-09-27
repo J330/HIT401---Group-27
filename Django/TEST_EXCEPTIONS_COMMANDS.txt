@@ -1,0 +1,237 @@
+================================================================================
+DETECTOR EXCEPTIONS TEST COMMANDS (Consolidated in exceptions.py)
+================================================================================
+
+QUICKSTART - RUN ALL TESTS:
+===========================
+
+cd E:\CAPSTONE\clone2\HIT401---Group-27\Django
+python detector/test_exceptions.py
+
+Expected output: 
+  ✓ All exceptions imported successfully
+  ✓ inference.py imports PredictionError from exceptions.py (no duplicates)
+  --- Testing Exception Hierarchy ---
+  ✓ [12+ hierarchy and raising tests]
+  ✓ No duplicate exception definitions in inference.py
+  ✓ ALL TESTS PASSED - Exceptions module is working correctly!
+
+
+SETUP:
+------
+Run the server first in one terminal:
+  cd E:\CAPSTONE\clone2\HIT401---Group-27\Django
+  python manage.py runserver
+
+Open a second terminal or use a different tab for testing.
+
+
+1. RUN AUTOMATED TESTS (Recommended)
+====================================
+
+Option A: Run test_exceptions.py directly
+  cd E:\CAPSTONE\clone2\HIT401---Group-27\Django
+  python detector/test_exceptions.py
+
+This runs 13+ automated tests that verify:
+  ✓ All exceptions import successfully
+  ✓ No duplicates in inference.py
+  ✓ Correct inheritance hierarchy
+  ✓ Exception raising and catching
+  ✓ Message preservation
+
+Option B: Run with Django test runner
+  cd E:\CAPSTONE\clone2\HIT401---Group-27\Django
+  python manage.py test detector.test_exceptions -v 2
+
+Option C: Run with pytest (if installed)
+  cd E:\CAPSTONE\clone2\HIT401---Group-27\Django
+  pytest detector/test_exceptions.py -v
+
+
+2. DJANGO SHELL TESTS (Manual verification)
+=============================================
+
+Start Django shell:
+  cd E:\CAPSTONE\clone2\HIT401---Group-27\Django
+  python manage.py shell
+
+Test 1: Import all exceptions from detector.exceptions (NOT inference)
+  >>> from detector.exceptions import DetectorError, PredictionError, InvalidImageError, ModelNotAvailableError, BackgroundFilterError, SessionError, ScanHistoryError
+  >>> print("✓ All exceptions imported successfully from exceptions.py")
+
+Test 2: Verify inference.py imports from exceptions (no duplicates)
+  >>> from detector.inference import PredictionError as InferencePredictionError
+  >>> from detector.exceptions import PredictionError as ExceptionsPredictionError
+  >>> print(f"✓ Same class? {InferencePredictionError is ExceptionsPredictionError}")
+
+Test 3: Test exception hierarchy
+  >>> from detector.exceptions import DetectorError, PredictionError, ModelNotAvailableError
+  >>> try:
+  ...     raise ModelNotAvailableError("Model file not found")
+  ... except PredictionError as e:
+  ...     print(f"✓ Caught ModelNotAvailableError via PredictionError: {e}")
+
+Test 4: Test catching base DetectorError
+  >>> from detector.exceptions import DetectorError, BackgroundFilterError
+  >>> try:
+  ...     raise BackgroundFilterError("Rembg failed")
+  ... except DetectorError as e:
+  ...     print(f"✓ All detector errors caught by base class: {e}")
+
+Test 5: Test InvalidImageError from exceptions
+  >>> from detector.exceptions import InvalidImageError
+  >>> try:
+  ...     raise InvalidImageError("Only JPG/PNG allowed")
+  ... except InvalidImageError as e:
+  ...     print(f"✓ InvalidImageError works correctly: {e}")
+
+Test 6: Verify no duplicate definitions in inference.py
+  >>> import inspect
+  >>> from detector import inference
+  >>> source = inspect.getsource(inference)
+  >>> if "class PredictionError" in source:
+  ...     print("✗ ERROR: Duplicate PredictionError in inference.py!")
+  ... else:
+  ...     print("✓ No duplicate exceptions in inference.py")
+
+Exit shell:
+  >>> exit()
+
+
+3. PYTHON IMPORT TESTS (Quick verification)
+============================================
+
+Test 7: Direct Python import test
+  cd E:\CAPSTONE\clone2\HIT401---Group-27\Django
+  python -c "from detector.exceptions import *; print('✓ All exceptions imported'); print(f'PredictionError: {PredictionError}'); print(f'ModelNotAvailableError: {ModelNotAvailableError}')"
+
+Test 8: Verify inference imports from exceptions
+  python -c "from detector.inference import PredictionError; from detector.exceptions import PredictionError as PE; print('✓ Same source' if PredictionError is PE else '✗ Different sources')"
+
+
+4. DJANGO SYSTEM CHECK
+======================
+
+Test 9: Run Django system checks (should pass with no errors)
+  cd E:\CAPSTONE\clone2\HIT401---Group-27\Django
+  python manage.py check
+  
+Expected output: "System check identified no issues (0 silenced)."
+
+
+5. TEST EXCEPTIONS FILE STRUCTURE
+==================================
+
+Location: detector/test_exceptions.py
+
+Tests covered:
+  ✓ Import all 7 exception classes
+  ✓ Verify inference.py uses exceptions from exceptions.py
+  ✓ Test PredictionError inherits from DetectorError
+  ✓ Test InvalidImageError inherits from PredictionError
+  ✓ Test ModelNotAvailableError inherits from PredictionError
+  ✓ Test BackgroundFilterError inherits from DetectorError
+  ✓ Test SessionError inherits from DetectorError
+  ✓ Test ScanHistoryError inherits from DetectorError
+  ✓ Raise and catch InvalidImageError as PredictionError
+  ✓ Raise and catch ModelNotAvailableError as PredictionError
+  ✓ Raise and catch BackgroundFilterError as DetectorError
+  ✓ Raise and catch SessionError as DetectorError
+  ✓ Raise and catch ScanHistoryError as DetectorError
+  ✓ Check for duplicate definitions in inference.py
+  ✓ Verify exception messages are preserved
+
+
+6. USAGE IN VIEWS (Example integration)
+========================================
+
+Add to detector/views.py:
+
+  from django.http import JsonResponse
+  from detector.exceptions import InvalidImageError, PredictionError, SessionError
+  from detector.inference import predict_two_stage
+  
+  def predict_api(request):
+      if request.method != 'POST':
+          return JsonResponse({'error': 'POST required'}, status=405)
+      
+      try:
+          if 'image' not in request.FILES:
+              raise InvalidImageError("Image file required")
+          
+          image_file = request.FILES['image']
+          
+          # Validate image
+          if image_file.size > 10 * 1024 * 1024:  # 10MB limit
+              raise InvalidImageError("Image exceeds 10MB limit")
+          
+          # Run prediction (uses exceptions from detector.exceptions)
+          try:
+              prediction = predict_two_stage(image_file)
+          except PredictionError as e:
+              return JsonResponse({'error': f'Prediction failed: {str(e)}'}, status=500)
+          
+          # Save to database
+          session_key = get_session_key(request)
+          ScanHistory.objects.create(
+              session_key=session_key,
+              label=prediction['health_scan']['label'],
+              confidence=prediction['health_scan']['confidence'],
+              result=prediction
+          )
+          
+          return JsonResponse(prediction)
+      
+      except InvalidImageError as e:
+          return JsonResponse({'error': str(e)}, status=400)
+      except SessionError as e:
+          return JsonResponse({'error': 'Session error'}, status=500)
+
+
+7. INTEGRATION CHECKLIST (After consolidation)
+===============================================
+
+[ ] exceptions.py has all 7 custom exception classes
+[ ] inference.py imports from detector.exceptions (no duplicates)
+[ ] test_exceptions.py created and runs successfully
+[ ] All automated tests pass: python detector/test_exceptions.py
+[ ] Django system check passes: python manage.py check
+[ ] Manual shell tests 1-6 all pass
+
+[ ] (Optional) Add logging to exception handlers:
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        prediction = predict_two_stage(image)
+    except ModelNotAvailableError as e:
+        logger.error(f"Model missing: {e}", exc_info=True)
+        return JsonResponse({'error': 'Service unavailable'}, status=503)
+    except PredictionError as e:
+        logger.error(f"Inference failed: {e}", exc_info=True)
+        return JsonResponse({'error': 'Prediction failed'}, status=500)
+
+
+8. RUNNING EVERYTHING
+======================
+
+Terminal 1 - Start server:
+  cd E:\CAPSTONE\clone2\HIT401---Group-27\Django
+  python manage.py runserver
+
+Terminal 2 - Run automated tests:
+  cd E:\CAPSTONE\clone2\HIT401---Group-27\Django
+  python detector/test_exceptions.py
+
+Terminal 2 - Run system check:
+  python manage.py check
+
+Terminal 2 - Run Django shell tests (Optional):
+  python manage.py shell
+  # Run Test 1-6 above
+
+Verify no errors appear in Terminal 1 server output.
+
+
+================================================================================
