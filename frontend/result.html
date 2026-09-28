@@ -1,19 +1,162 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-AU">
 <head>
   <meta charset="UTF-8">
-  <title>Result — Black Sigatoka Detector</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Leaf report · Black Sigatoka Detector</title>
+  <meta name="description" content="Screen a banana leaf photo for Black Sigatoka, a notifiable banana disease in Australia.">
+  <link rel="icon" href="data:image/svg+xml,<svg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'><path d='M3.5 27.5C5 13 15 4.5 28.5 3.5 28 17 19.5 26.5 5 28.5Z' fill='%2324513A'/><path d='M4.5 27.5 27 5' stroke='%23D8E6C2' stroke-width='1.6' stroke-linecap='round'/><ellipse cx='19.5' cy='17.5' rx='3' ry='1.3' transform='rotate(-38 19.5 17.5)' fill='%23E6C446' opacity='.7'/><ellipse cx='19.5' cy='17.5' rx='2' ry='.8' transform='rotate(-38 19.5 17.5)' fill='%233B2416'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400..600&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <header><h1>Result</h1></header>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="upload.html">Analyse Another</a>
-    <a href="about.html">About</a>
-  </nav>
-  <main id="resultContainer"><p>Loading result...</p></main>
-  <script src="js/script.js"></script>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3.5 27.5C5 13 15 4.5 28.5 3.5 28 17 19.5 26.5 5 28.5Z" fill="#24513A"/><path d="M4.5 27.5 27 5" stroke="#D8E6C2" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="19.5" cy="17.5" rx="3" ry="1.3" transform="rotate(-38 19.5 17.5)" fill="#E6C446" opacity=".7"/><ellipse cx="19.5" cy="17.5" rx="2" ry=".8" transform="rotate(-38 19.5 17.5)" fill="#3B2416"/></svg>Black Sigatoka Detector</a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="index.html">Home</a>
+        <a href="upload.html">Check a leaf</a>
+        <a href="about.html">How it works</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <div class="wrap">
+      <div class="report-head">
+        <div>
+          <h1>Leaf report</h1>
+          <p class="report-meta" id="report-meta"></p>
+        </div>
+        <a class="btn btn-secondary no-print" href="upload.html">Check another leaf</a>
+      </div>
+
+      <div class="report-grid">
+        <section class="verdict" id="verdict" aria-labelledby="verdict-title">
+          <p class="verdict-kicker" id="verdict-kicker"></p>
+          <h2 class="verdict-title" id="verdict-title"></h2>
+          <p class="verdict-summary" id="verdict-summary"></p>
+
+          <div class="meter">
+            <div class="meter-top">
+              <span class="meter-label" id="meter-label"></span>
+              <span class="meter-value" id="meter-value"></span>
+            </div>
+            <div class="meter-track" id="meter-track" role="meter" aria-labelledby="meter-label" aria-valuemin="0" aria-valuemax="100">
+              <div class="meter-fill" id="meter-fill"></div>
+            </div>
+            <p class="meter-note" id="meter-note"></p>
+          </div>
+
+          <div class="probs" id="probs">
+            <div class="prob" id="prob-bs"><span>Black Sigatoka</span><span class="prob-bar"><i></i></span><span class="prob-val"></span></div>
+            <div class="prob" id="prob-healthy"><span>Healthy</span><span class="prob-bar"><i></i></span><span class="prob-val"></span></div>
+          </div>
+
+          <div class="next-steps">
+            <h3>What to do next</h3>
+            <ul id="next-steps-list"></ul>
+          </div>
+        </section>
+
+        <section class="viewer" aria-labelledby="viewer-title">
+          <div class="viewer-stage" id="viewer-stage" data-mode="photo">
+            <img id="viewer-photo" alt="The leaf photo you uploaded">
+            <canvas id="heatmap-canvas" aria-hidden="true"></canvas>
+            <div class="viewer-probe" id="viewer-probe" aria-hidden="true"></div>
+          </div>
+          <p class="viewer-empty" id="viewer-empty" hidden></p>
+          <div class="viewer-controls">
+            <h2 id="viewer-title" class="visually-hidden">Where the model looked</h2>
+            <div class="segmented" role="group" aria-label="View">
+              <button type="button" data-mode-btn="photo" aria-pressed="false">Photo</button>
+              <button type="button" data-mode-btn="overlay" aria-pressed="true">Overlay</button>
+              <button type="button" data-mode-btn="heatmap" aria-pressed="false">Heatmap</button>
+            </div>
+            <div class="slider-row" id="opacity-row">
+              <label for="opacity">Overlay strength</label>
+              <input type="range" id="opacity" min="10" max="100" value="70">
+              <output id="opacity-out" for="opacity">70%</output>
+            </div>
+            <div class="legend" id="legend">
+              <span>Ignored</span><span class="legend-bar"></span><span>Decisive</span>
+            </div>
+            <dl class="stat-strip" id="heatmap-stats">
+              <div><dt>Strongest focus</dt><dd id="stat-peak">—</dd></div>
+              <div><dt>High-attention area</dt><dd id="stat-focus">—</dd></div>
+            </dl>
+            <p class="viewer-caption">Grad-CAM shows which parts of the photo most influenced the decision. Hover or tap the image to read values. Bright areas on lesions are a good sign; bright areas on the background mean the result deserves less trust.</p>
+          </div>
+        </section>
+      </div>
+
+      <section class="trust" aria-labelledby="trust-title">
+        <div class="trust-head">
+          <div>
+            <h2 id="trust-title">How reliable is this model?</h2>
+            <p><span id="model-name"></span>. <span id="model-eval"></span></p>
+          </div>
+          <span class="sample-flag" id="sample-flag" hidden>Sample figures until the team adds real evaluation results</span>
+        </div>
+
+        <div class="metrics" id="metrics"></div>
+
+        <div class="trust-grid">
+          <div>
+            <h3>Test results in detail</h3>
+            <table class="confusion">
+              <caption class="visually-hidden">Confusion matrix on the validation set</caption>
+              <thead>
+                <tr><td></td><th scope="col">Said Black Sigatoka</th><th scope="col">Said healthy</th></tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">Actually Black Sigatoka</th><td class="hit" id="cm-tp"></td><td class="miss" id="cm-fn"></td></tr>
+                <tr><th scope="row">Actually healthy</th><td class="miss" id="cm-fp"></td><td class="hit" id="cm-tn"></td></tr>
+              </tbody>
+            </table>
+            <p class="axis-note">Green cells are correct answers, red cells are mistakes.</p>
+          </div>
+          <div>
+            <h3>What this means for your result</h3>
+            <details class="explain" open>
+              <summary>Could a healthy result be wrong?</summary>
+              <p id="explain-recall"></p>
+            </details>
+            <details class="explain">
+              <summary>Could a positive result be a false alarm?</summary>
+              <p id="explain-fp"></p>
+            </details>
+            <details class="explain">
+              <summary>What does the confidence percentage mean?</summary>
+              <p>It's the probability the model assigns to its answer. Above 90% the model is usually right; below 70% it's close to a coin toss between the two classes. Confidence reflects the model's certainty, not the severity of the disease.</p>
+            </details>
+            <details class="explain">
+              <summary>How the photo was checked</summary>
+              <ul class="checklist" id="quality-recap"></ul>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <div class="actions-bar">
+        <div class="btn-row">
+          <button type="button" class="btn btn-secondary" id="print-btn">Save as PDF</button>
+          <button type="button" class="btn btn-secondary" id="copy-btn">Copy summary</button>
+        </div>
+        <a class="btn btn-primary" href="upload.html">Check another leaf</a>
+      </div>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>HIT401 Group 27 capstone project. A screening aid, not a laboratory diagnosis.</p>
+      <p>Exotic Plant Pest Hotline: <a href="tel:1800084881">1800 084 881</a></p>
+    </div>
+  </footer>
+  <script src="js/model-info.js"></script>
   <script src="js/result.js"></script>
 </body>
 </html>

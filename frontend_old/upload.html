@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload — Black Sigatoka Detector</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header><h1>Upload a Leaf Photo</h1></header>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="upload.html">Analyse a Leaf</a>
+    <a href="about.html">About</a>
+  </nav>
+  <main>
+    <input type="file" id="imageInput" accept="image/*">
+    <img id="preview" style="display:none;">
+    <button id="uploadBtn">Analyse Leaf</button>
+    <p id="statusMsg"></p>
+  </main>
+  <script src="js/script.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/upload.js"></script>
+</body>
+</html>
