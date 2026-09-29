@@ -46,7 +46,7 @@
         </thead>
         <tbody>
           {% for prediction in predictions %}
-          <tr class="scan-row" data-scan-id="{{ prediction.id }}" data-result='{{ prediction.result|escapejs }}'>
+          <tr class="scan-row" data-scan-id="{{ prediction.id }}">
             <td class="col-image">
               {% if forloop.first %}
               <img class="scan-image client-scan-image" alt="Latest uploaded leaf scan" hidden>
@@ -118,6 +118,11 @@
           <p class="muted-text">Select a scan from the list to view its analysis.</p>
         </div>
       </div>
+
+      <!-- Download Report Button -->
+      <div class="sidebar-section">
+        <button class="btn btn-primary" onclick="downloadSessionReport()" style="width: 100%;">Download Report</button>
+      </div>
     </div>
   </div>
 </section>
@@ -128,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const scanDetails = document.getElementById('scan-details');
   
   scanRows.forEach(row => {
-    row.addEventListener('click', function() {
+    row.addEventListener('click', async function() {
       // Remove active class from all rows
       scanRows.forEach(r => r.classList.remove('active'));
       // Add active class to clicked row
@@ -137,25 +142,51 @@ document.addEventListener('DOMContentLoaded', function() {
       // Get scan data from row
       const scanId = this.dataset.scanId;
       const label = this.querySelector('.status-pill').textContent.trim();
-      const confidence = this.querySelector('.col-confidence').textContent.trim();
       const detail = this.querySelector('.col-detail').textContent.trim();
       
-      // Get full result data
+      // Fetch full result data via API
       let resultData = {};
       try {
-        resultData = JSON.parse(this.dataset.result);
+        const response = await fetch(`/api/scan/${scanId}/result/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+          }
+        });
+        if (response.ok) {
+          resultData = await response.json();
+        } else {
+          console.error('Failed to fetch scan result:', response.status);
+        }
       } catch (e) {
-        console.error('Failed to parse result data:', e);
+        console.error('Failed to fetch result data:', e);
       }
       
-      // Display scan details
-      displayScanDetails(label, confidence, detail, resultData);
+      // Display scan details (confidence will be extracted from classifiers)
+      displayScanDetails(label, detail, resultData);
     });
   });
   
-  function displayScanDetails(label, confidence, detail, resultData) {
+  // Helper function to get CSRF token from cookies
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  
+  function displayScanDetails(label, detail, resultData) {
     // Build probabilities display from all disease classes
     let probabilitiesHtml = '';
+    let maxConfidence = 0;
     
     if (resultData.health_scan) {
       if (resultData.health_scan.probabilities) {
@@ -165,6 +196,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const sortedProbs = Object.entries(probs)
           .map(([name, value]) => ({ name, value: parseFloat(value) }))
           .sort((a, b) => b.value - a.value);
+        
+        // Track max confidence
+        if (sortedProbs.length > 0) {
+          maxConfidence = sortedProbs[0].value;
+        }
         
         // Build HTML for each probability
         sortedProbs.forEach(({ name, value }) => {
@@ -187,6 +223,9 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
     
+    // Use max confidence from classifiers if available
+    const displayConfidence = maxConfidence > 0 ? Math.round(maxConfidence * 100) : 0;
+    
     const html = `
       <div class="scan-detail-content">
         <div class="detail-section">
@@ -195,6 +234,10 @@ document.addEventListener('DOMContentLoaded', function() {
             <li>
               <span class="detail-label">Banana leaf</span>
               <span class="detail-value">✓ Recognized</span>
+            </li>
+            <li>
+              <span class="detail-label">Confidence</span>
+              <span class="detail-value">${displayConfidence}%</span>
             </li>
           </ul>
         </div>
@@ -210,12 +253,15 @@ document.addEventListener('DOMContentLoaded', function() {
             ${probabilitiesHtml || '<p style="color: #999; font-size: 0.9em;">Probabilities not available for this scan. <a href="https://developer.chrome.com/docs/devtools/console/" target="_blank">Check browser console</a> for details.</p>'}
           </div>
         </div>
-        
-        <button class="btn btn-primary download-report" style="width: 100%; margin-top: 1rem;">Download report</button>
       </div>
     `;
     scanDetails.innerHTML = html;
   }
 });
+
+function downloadSessionReport() {
+  // Open the full session report in a new tab
+  window.open(`/api/session/report/`, '_blank');
+}
 </script>
 {% endblock %}

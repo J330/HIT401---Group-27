@@ -5,7 +5,8 @@ DETECTOR EXCEPTIONS TEST COMMANDS (Consolidated in exceptions.py)
 QUICKSTART - RUN ALL TESTS:
 ===========================
 
-cd E:\CAPSTONE\clone2\HIT401---Group-27\Django
+From the repository root, enter the Django project directory:
+cd .\Django
 python detector/test_exceptions.py
 
 Expected output: 
@@ -20,7 +21,7 @@ Expected output:
 SETUP:
 ------
 Run the server first in one terminal:
-  cd E:\CAPSTONE\clone2\HIT401---Group-27\Django
+  cd .\Django
   python manage.py runserver
 
 Open a second terminal or use a different tab for testing.
@@ -30,7 +31,7 @@ Open a second terminal or use a different tab for testing.
 ====================================
 
 Option A: Run test_exceptions.py directly
-  cd E:\CAPSTONE\clone2\HIT401---Group-27\Django
+  cd .\Django
   python detector/test_exceptions.py
 
 This runs 13+ automated tests that verify:
@@ -41,11 +42,11 @@ This runs 13+ automated tests that verify:
   ✓ Message preservation
 
 Option B: Run with Django test runner
-  cd E:\CAPSTONE\clone2\HIT401---Group-27\Django
+  cd .\Django
   python manage.py test detector.test_exceptions -v 2
 
 Option C: Run with pytest (if installed)
-  cd E:\CAPSTONE\clone2\HIT401---Group-27\Django
+  cd .\Django
   pytest detector/test_exceptions.py -v
 
 
@@ -53,7 +54,7 @@ Option C: Run with pytest (if installed)
 =============================================
 
 Start Django shell:
-  cd E:\CAPSTONE\clone2\HIT401---Group-27\Django
+  cd .\Django
   python manage.py shell
 
 Test 1: Import all exceptions from detector.exceptions (NOT inference)
@@ -103,7 +104,7 @@ Exit shell:
 ============================================
 
 Test 7: Direct Python import test
-  cd E:\CAPSTONE\clone2\HIT401---Group-27\Django
+  cd .\Django
   python -c "from detector.exceptions import *; print('✓ All exceptions imported'); print(f'PredictionError: {PredictionError}'); print(f'ModelNotAvailableError: {ModelNotAvailableError}')"
 
 Test 8: Verify inference imports from exceptions
@@ -114,7 +115,7 @@ Test 8: Verify inference imports from exceptions
 ======================
 
 Test 9: Run Django system checks (should pass with no errors)
-  cd E:\CAPSTONE\clone2\HIT401---Group-27\Django
+  cd .\Django
   python manage.py check
   
 Expected output: "System check identified no issues (0 silenced)."
@@ -217,11 +218,11 @@ Add to detector/views.py:
 ======================
 
 Terminal 1 - Start server:
-  cd E:\CAPSTONE\clone2\HIT401---Group-27\Django
+  cd .\Django
   python manage.py runserver
 
 Terminal 2 - Run automated tests:
-  cd E:\CAPSTONE\clone2\HIT401---Group-27\Django
+  cd .\Django
   python detector/test_exceptions.py
 
 Terminal 2 - Run system check:

@@ -1,0 +1,145 @@
+{% extends 'detector/base.html' %}
+{% load static %}
+
+{% block title %}Session Report &middot; Black Sigatoka Detector{% endblock %}
+
+{% block content %}
+<div class="report-container session-report">
+  <!-- Header -->
+  <div class="report-header">
+    <h1>LEAF HEALTH CHECK: COMPLETE SESSION REPORT</h1>
+    <div class="header-meta">
+      <p><strong>Document ID:</strong> LHC-{{ "now"|date:"Ymd" }}-{{ scans|length|stringformat:"02d" }}</p>
+      <p><strong>Generated On:</strong> {{ "now"|date:"M d, Y \a\t h:i A" }}</p>
+    </div>
+  </div>
+
+  <!-- Section 1: Session Overview -->
+  <section class="report-section">
+    <h2>SESSION HEALTH OVERVIEW</h2>
+    <p class="section-desc">A high-level overview of overall field health during this scanning sequence.</p>
+    
+    <!-- Health Bar -->
+    <div class="health-bar-container">
+      <p class="health-bar-label">[ SESSION HEALTH BAR ]</p>
+      <div class="health-bar">
+        <div class="health-bar-segment healthy" style="width: {{ healthy_pct }}%">
+          <span class="segment-label">{{ healthy_pct }}%</span>
+        </div>
+        <div class="health-bar-segment diseased" style="width: {{ diseased_pct }}%">
+          <span class="segment-label">{{ diseased_pct }}%</span>
+        </div>
+      </div>
+      <div class="health-bar-legend">
+        <div class="legend-item">
+          <span class="legend-dot healthy"></span>
+          <span class="legend-text">HEALTHY ({{ healthy_pct }}%)</span>
+          <span class="legend-count">({{ healthy_scans }} Scans Passed)</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot diseased"></span>
+          <span class="legend-text">DISEASED ({{ diseased_pct }}%)</span>
+          <span class="legend-count">({{ diseased_scans }} Scan Flagged)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary KPI Table -->
+    <table class="kpi-table">
+      <thead>
+        <tr>
+          <th>Summary KPI Metric</th>
+          <th>Registered Log Count</th>
+          <th>Current Status</th>
+          <th>Recommended Field Protocol</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Total Scans Run</strong></td>
+          <td>{{ total_scans }}</td>
+          <td><span class="status-badge neutral">Session Closed</span></td>
+          <td>No further scans pending.</td>
+        </tr>
+        <tr>
+          <td><strong>Healthy Scans</strong></td>
+          <td>{{ healthy_scans }}</td>
+          <td><span class="status-badge clear">✓ CLEAR</span></td>
+          <td>Maintain regular field monitoring schedules.</td>
+        </tr>
+        <tr>
+          <td><strong>Diseased Scans</strong></td>
+          <td>{{ diseased_scans }}</td>
+          <td>
+            {% if diseased_scans > 0 %}
+              <span class="status-badge alert">⚠ ALERT</span>
+            {% else %}
+              <span class="status-badge clear">✓ CLEAR</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if diseased_scans > 0 %}
+              Isolate and treat flagged regions. Review scan #{{ diseased_scans }}.
+            {% else %}
+              No action required at this time.
+            {% endif %}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Section 2: Scan Chronology -->
+  <section class="report-section">
+    <h2>COMPLETE SCAN CHRONOLOGY MATRIX</h2>
+    <p class="section-desc">Every item evaluated during this runtime session is cataloged below.</p>
+    
+    {% if scans %}
+    <table class="chronology-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Recorded Timestamp</th>
+          <th>Primary Diagnosis</th>
+          <th>Confidence</th>
+          <th>Classifier Probabilities</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for scan in scans %}
+        <tr>
+          <td>#{{ forloop.counter }}</td>
+          <td>{{ scan.date }}<br><span class="time">{{ scan.time }}</span></td>
+          <td>
+            <span class="diagnosis-badge {% if scan.label == 'healthy' %}diagnosis-healthy{% else %}diagnosis-diseased{% endif %}">
+              ● {{ scan.label_display }}
+            </span>
+            <br>
+            <span class="verification">
+              {% if scan.health_reliable %}(Verified){% else %}(Detected){% endif %}
+            </span>
+          </td>
+          <td>{{ scan.confidence }}%</td>
+          <td class="classifiers">
+            {% if scan.probabilities %}
+              {% for class_name, prob_pct in scan.probabilities %}
+                <div class="classifier-row">{{ class_name }}: {{ prob_pct }}%</div>
+              {% endfor %}
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="no-data">No scans recorded in this session.</p>
+    {% endif %}
+  </section>
+
+  <!-- Print Button -->
+  <div class="print-section">
+    <button class="print-btn" onclick="window.print()">📄 Print / Save as PDF</button>
+  </div>
+</div>
+
+{% endblock %}

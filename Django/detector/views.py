@@ -2,6 +2,7 @@ import io
 import ipaddress
 import logging
 import socket
+from datetime import datetime
 from urllib.parse import urljoin, urlparse
 from urllib.request import (
     HTTPRedirectHandler,
@@ -258,8 +259,6 @@ def predict_api(request):
         return JsonResponse({"error": str(error)}, status=400)
     except ModelNotAvailableError as error:
         return JsonResponse({"error": str(error)}, status=503)
-    except ModelRuntimeError as error:
-        return JsonResponse({"error": str(error)}, status=503)
     except PredictionError as error:
         return JsonResponse({"error": str(error)}, status=400)
     except Exception:
@@ -273,3 +272,68 @@ def predict_api(request):
             },
             status=500,
         )
+
+
+@require_POST
+def get_scan_result(request, scan_id):
+    """Retrieve full result data for a scan by ID."""
+    session_key = get_session_key(request)
+    scan = get_object_or_404(ScanHistory, pk=scan_id, session_key=session_key)
+    return JsonResponse(scan.result)
+
+
+def session_report(request):
+    """Display a comprehensive report of all scans in the session."""
+    session_key = get_session_key(request)
+    all_scans = list(ScanHistory.objects.filter(session_key=session_key).order_by('-created_at'))
+    
+    total_scans = len(all_scans)
+    healthy_scans = sum(1 for s in all_scans if s.label == 'healthy')
+    diseased_scans = sum(1 for s in all_scans if s.label == 'black_sigatoka')
+    
+    # Calculate percentages
+    healthy_pct = int((healthy_scans / total_scans * 100)) if total_scans > 0 else 0
+    diseased_pct = int((diseased_scans / total_scans * 100)) if total_scans > 0 else 0
+    
+    # Build scan details for each scan
+    scans_data = []
+    for scan in all_scans:
+        result_data = scan.result
+        initial_scan = result_data.get('initial_scan', {})
+        health_scan = result_data.get('health_scan', {})
+        
+        # Extract probabilities and format them
+        probabilities = health_scan.get('probabilities', {})
+        prob_list = []
+        if probabilities:
+            sorted_probs = sorted(probabilities.items(), key=lambda x: float(x[1]), reverse=True)
+            for class_name, prob_value in sorted_probs:
+                prob_float = float(prob_value)
+                prob_pct = int(prob_float * 100 + 0.5)
+                display_name = class_name.replace('_', ' ').title()
+                prob_list.append((display_name, prob_pct))
+        
+        # Use stored confidence value
+        confidence = round(scan.confidence * 100) if scan.confidence is not None else 0
+        
+        scan_info = {
+            'id': scan.id,
+            'date': scan.created_at.strftime("%b %d, %Y"),
+            'time': scan.created_at.strftime("%I:%M %p"),
+            'label': scan.label,
+            'label_display': health_scan.get('label_display', 'Unknown').upper(),
+            'confidence': confidence,
+            'health_reliable': health_scan.get('reliable_match', False),
+            'probabilities': prob_list,
+        }
+        scans_data.append(scan_info)
+    
+    return render(request, 'detector/session_report.html', {
+        'total_scans': total_scans,
+        'healthy_scans': healthy_scans,
+        'diseased_scans': diseased_scans,
+        'healthy_pct': healthy_pct,
+        'diseased_pct': diseased_pct,
+        'scans': scans_data,
+    })
+
