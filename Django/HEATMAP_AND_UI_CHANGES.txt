@@ -6,3 +6,18 @@ Changes in this build
 - The Scan Image button is now beside the Analyse a Leaf heading, matching the Scan Another Photo button position on the result page.
 - The About page and navigation item were removed.
 - The Why it matters section was removed from the home page.
+
+2026-09-28 update
+-----------------
+- Local `python manage.py runserver` now enables local DEBUG automatically.
+- WhiteNoise middleware/manifest storage are used only when DEBUG is off, so
+  local development no longer requires a pre-existing `staticfiles/` folder.
+- Docker/production `collectstatic` behavior is unchanged and still uses
+  WhiteNoise manifest storage.
+- DINOv2 explainability now uses class-specific patch attribution rather than
+  painting the entire image with a CNN-style Grad-CAM map.
+- Only roughly the top 30% of influential regions are displayed.
+- The existing rembg foreground mask is reused when reliable to reduce
+  background foliage/sky influence in the displayed overlay.
+- Result-page wording now labels the method as DINOv2 patch attribution and
+  clarifies that the overlay is not an exact disease-segmentation mask.

@@ -404,7 +404,7 @@ function renderHeatmap(health, image) {
     };
     heatmapImage.src = health.heatmap_url;
     document.getElementById("heatmap-method").textContent =
-      health.heatmap_method || "Grad-CAM";
+      health.heatmap_method || "DINOv2 patch attribution";
 
     const target = prettyLabel(
       health.heatmap_target || health.classifier_label_display || "prediction"

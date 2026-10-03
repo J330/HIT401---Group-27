@@ -7,6 +7,12 @@ import sys
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'website.settings')
+
+    # Local development convenience: runserver should work without requiring
+    # a separate DJANGO_DEBUG environment variable. Production commands such
+    # as collectstatic keep DEBUG off unless explicitly enabled.
+    if len(sys.argv) > 1 and sys.argv[1] == 'runserver':
+        os.environ.setdefault('DJANGO_DEBUG', 'True')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

@@ -216,14 +216,15 @@
       <p class="stage-kicker">Explainability</p>
       <h2>What the health AI focused on</h2>
     </div>
-    <span class="heatmap-badge" id="heatmap-method">Grad-CAM</span>
+    <span class="heatmap-badge" id="heatmap-method">DINOv2 patch attribution</span>
   </div>
 
   <p class="heatmap-copy">
     Warmer highlighted regions contributed more strongly to the classifier's
-    highest-scoring class. The overlay uses contrast-normalised transformer
-    Grad-CAM where available so important patch regions are easier to see. It
-    explains the classifier choice; it does not override a failed reliability check.
+    selected class. To reduce noisy full-image colouring, the overlay keeps only
+    the strongest DINOv2 patch contributions and suppresses background regions
+    when the foreground mask is reliable. It explains the classifier choice; it
+    is not an exact disease-segmentation mask and does not override reliability checks.
   </p>
 
   <div class="heatmap-comparison">
@@ -233,7 +234,7 @@
     </figure>
     <figure>
       <figcaption>AI attention overlay</figcaption>
-      <img id="heatmap-image" alt="Grad-CAM attention heatmap overlay">
+      <img id="heatmap-image" alt="DINOv2 patch attribution heatmap overlay">
     </figure>
   </div>
 
