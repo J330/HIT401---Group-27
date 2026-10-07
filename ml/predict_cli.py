@@ -1,10 +1,4 @@
 # ml/predict_cli.py
-# Terminal test for the full pipeline (open-set gate + classifier).
-# Usage: python predict_cli.py <path-to-image>
-#
-# Two-stage pipeline:
-#   1. Gate (DINOv2 centroids): is this image in-distribution for our classes?
-#   2. Classifier (ConvNeXtV2): healthy vs black_sigatoka
 
 import sys
 import warnings

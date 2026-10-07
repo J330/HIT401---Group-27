@@ -1,40 +1,10 @@
 # ml/clean_data.py
 
-
-# References
-
-# https://www.geeksforgeeks.org/image-blur-detection-using-opencv/
-
-# https://docs.opencv.org/4.x/d8/d83/tutorial_py_grabcut.html
-
-# https://docs.opencv.org/4.x/d9/d61/tutorial_py_morphological_ops.html
-
-# https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.verify
-
-# https://en.wikipedia.org/wiki/RGBA_color_model
-
-# ml/clean_data.py
-#
-# Non-destructive banana leaf dataset cleaner for outdoor images.
-# Raw images are never modified — only read. Cleaned outputs are written
-# to data/cleaned/, and rejects are copied to data/processed/.
-#
-# Pipeline per class:
-#   1. Corrupt files     → copied to processed/corrupt/
-#   2. Duplicates        → copied to processed/duplicates/
-#   3. Small (<MIN_DIM)  → copied to processed/small/
-#   4. Over-bright/dark  → copied to processed/exposure/
-#   5. Blurry            → copied to processed/blurry/
-#   6. Leaf too small    → zoom-cropped, saved to cleaned/
-#   7. Remaining         → saved to cleaned/
-#
-# Install:  pip install opencv-python numpy pillow imagehash
-#
 # References:
-#   PHash dedup:     https://github.com/JohannesBuchner/imagehash
-#   Pillow verify:   https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.verify
-#   HSV colorspace:  https://docs.opencv.org/4.x/df/d9d/tutorial_py_colorspaces.html
-#   Blur (Laplacian): Pech-Pacheco et al. (2000), ICPR.
+#  https://github.com/JohannesBuchner/imagehash
+#  https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.verify
+#  https://docs.opencv.org/4.x/df/d9d/tutorial_py_colorspaces.html
+
 
 import shutil
 import sys
