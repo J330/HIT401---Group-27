@@ -5,7 +5,7 @@ import os
 import shutil
 from sklearn.model_selection import train_test_split
 
-RAW_DIR = "../data/raw"
+RAW_DIR = "../data/cleaned"
 OUT_DIR = "../data/processed"
 CLASSES = ["healthy", "black_sigatoka"]
 VAL_SIZE = 0.2

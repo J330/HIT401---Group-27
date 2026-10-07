@@ -1,6 +1,7 @@
 # ml/train_all.py
 # runs all five training scripts back to back.
 import subprocess
+import sys
 
 SCRIPTS = [
     "train_effnetv2s.py",
@@ -13,6 +14,7 @@ SCRIPTS = [
 if __name__ == "__main__":
     for script in SCRIPTS:
         print(f"\n{'='*20} Running {script} {'='*20}")
-        subprocess.run(["python", script], check=True)
+        # Use sys.executable to ensure it runs inside the active virtual environment
+        subprocess.run([sys.executable, script], check=True)
 
     print("\nAll five models trained. Next: python evaluate.py, then python build_gate.py")

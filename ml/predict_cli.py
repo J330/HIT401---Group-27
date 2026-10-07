@@ -1,64 +1,107 @@
 # ml/predict_cli.py
-# Terminal test script for the full pipeline (open-set gate + classifier),
-# no Django needed -- the fastest way to check all four image types:
-# healthy, black_sigatoka, other_disease, non_banana.
+# Terminal test for the full pipeline (open-set gate + classifier).
 # Usage: python predict_cli.py <path-to-image>
-import sys
-import torch
-from PIL import Image
-from transformers import AutoImageProcessor, AutoModelForImageClassification, AutoModel
+#
+# Two-stage pipeline:
+#   1. Gate (DINOv2 centroids): is this image in-distribution for our classes?
+#   2. Classifier (ConvNeXtV2): healthy vs black_sigatoka
 
-# Match these two lines to whichever model won in evaluate.py
+import sys
+import warnings
+from pathlib import Path
+
+import torch
+import torch.nn.functional as F
+from PIL import Image
+from transformers import (
+    AutoImageProcessor,
+    AutoModel,
+    AutoModelForImageClassification,
+)
+
+# Suppress noisy HF/transformers warnings for cleaner CLI output
+warnings.filterwarnings("ignore")
+
+# ---- Config ----
 CLASSIFIER_CHECKPOINT = "facebook/convnextv2-base-22k-224"
 CLASSIFIER_WEIGHTS = "models/convnextv2base.pt"
-CLASS_NAMES = ["healthy", "black_sigatoka"]
-GATE_THRESHOLD = 0.60  # cosine distance think against other_disease/non_banana images
+GATE_WEIGHTS = "models/gate_centroids.pt"
+GATE_CHECKPOINT = "facebook/dinov2-base"
+CLASS_NAMES = ["black_sigatoka", "healthy"]
+GATE_THRESHOLD = 0.60
 
 
 def load_models():
     device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    # Classifier
     clf_processor = AutoImageProcessor.from_pretrained(CLASSIFIER_CHECKPOINT)
     clf_model = AutoModelForImageClassification.from_pretrained(
-        CLASSIFIER_CHECKPOINT, num_labels=len(CLASS_NAMES), ignore_mismatched_sizes=True
+        CLASSIFIER_CHECKPOINT,
+        num_labels=len(CLASS_NAMES),
+        ignore_mismatched_sizes=True,
     )
     clf_model.load_state_dict(torch.load(CLASSIFIER_WEIGHTS, map_location=device))
     clf_model.to(device).eval()
 
-    gate_processor = AutoImageProcessor.from_pretrained("facebook/dinov2-base")
-    gate_model = AutoModel.from_pretrained("facebook/dinov2-base").eval().to(device)
-    gate_centroids = torch.load("models/gate_centroids.pt", map_location=device)
+    # Gate
+    gate_processor = AutoImageProcessor.from_pretrained(GATE_CHECKPOINT)
+    gate_model = AutoModel.from_pretrained(GATE_CHECKPOINT).to(device).eval()
+    gate_centroids = torch.load(GATE_WEIGHTS, map_location=device)
+
     return device, clf_processor, clf_model, gate_processor, gate_model, gate_centroids
 
 
 def predict(image_path):
-    device, clf_processor, clf_model, gate_processor, gate_model, gate_centroids = load_models()
-    pil_image = Image.open(image_path).convert("RGB")
+    if not Path(image_path).exists():
+        print(f"ERROR: file not found: {image_path}")
+        sys.exit(1)
 
-    # Step 1: the open-set gate -- is this even Healthy or Black Sigatoka?
-    gate_inputs = gate_processor(images=pil_image, return_tensors="pt")
+    (
+        device,
+        clf_processor,
+        clf_model,
+        gate_processor,
+        gate_model,
+        gate_centroids,
+    ) = load_models()
+
+    image = Image.open(image_path).convert("RGB")
+
+    # ---- Stage 1: gate ----
+    gate_inputs = gate_processor(images=image, return_tensors="pt")
     with torch.no_grad():
         embedding = gate_model(
             pixel_values=gate_inputs["pixel_values"].to(device)
         ).last_hidden_state[:, 0][0]
 
-    best_class, best_distance = None, float("inf")
+    nearest_class = None
+    nearest_distance = float("inf")
     for class_name, centroid in gate_centroids.items():
-        distance = 1 - torch.nn.functional.cosine_similarity(embedding, centroid, dim=0).item()
-        if distance < best_distance:
-            best_class, best_distance = class_name, distance
+        sim = F.cosine_similarity(embedding, centroid.to(device), dim=0).item()
+        distance = 1 - sim
+        if distance < nearest_distance:
+            nearest_class, nearest_distance = class_name, distance
 
-    if best_distance > GATE_THRESHOLD:
-        print(f"RESULT: not_black_sigatoka  (nearest={best_class}, distance={best_distance:.3f})")
-        print("-> This is what a different-disease leaf OR a non-banana photo both look like.")
+    # ---- Stage 2: classify (only if gate passes) ----
+    if nearest_distance > GATE_THRESHOLD:
+        print(f"RESULT       : not_black_sigatoka")
+        print(f"Reason       : out-of-distribution (nearest={nearest_class}, distance={nearest_distance:.3f})")
+        print(f"Note         : This looks like a different-disease leaf or a non-banana photo.")
         return
 
-    # Step 2: in-distribution -- run the actual Healthy/Black-Sigatoka classifier
-    clf_inputs = clf_processor(images=pil_image, return_tensors="pt")
+    clf_inputs = clf_processor(images=image, return_tensors="pt")
     with torch.no_grad():
         logits = clf_model(pixel_values=clf_inputs["pixel_values"].to(device)).logits
-        probs = torch.softmax(logits, dim=1)[0]
+        probs = F.softmax(logits, dim=1)[0]
+
     idx = int(probs.argmax())
-    print(f"RESULT: {CLASS_NAMES[idx]}  (confidence={float(probs[idx]):.3f})")
+    confidence = float(probs[idx])
+
+    # ---- Clean output ----
+    print(f"RESULT       : {CLASS_NAMES[idx]}")
+    print(f"Confidence   : {confidence:.3f}")
+    print(f"Gate check   : passed (distance={nearest_distance:.3f} to {nearest_class})")
 
 
 if __name__ == "__main__":

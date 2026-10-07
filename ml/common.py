@@ -20,6 +20,7 @@ def build_transforms(image_size, mean, std, train=True):
             A.HorizontalFlip(p=0.5),
             A.RandomBrightnessContrast(p=0.3),
             A.Rotate(limit=20, p=0.5),
+            A.GaussianBlur(blur_limit=(3, 7), p=0.4),
         ]
     aug += [A.Normalize(mean=mean, std=std), ToTensorV2()]
     return A.Compose(aug)
