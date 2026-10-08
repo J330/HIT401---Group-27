@@ -83,8 +83,6 @@ STORAGES = {
 "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
 }
 
-MEDIA_URL = "media/"
-MEDIA_ROOT = BASE_DIR / "media"  # uploaded photos + generated heatmaps land here
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

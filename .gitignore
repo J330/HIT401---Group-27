@@ -31,3 +31,10 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Django dev database
+backend/db.sqlite3
+
+# Compiled Python
+__pycache__/
+*.pyc
