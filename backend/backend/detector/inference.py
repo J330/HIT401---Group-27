@@ -1,10 +1,8 @@
 # backend/detector/inference.py
 # Sources: AnomalyDINO -- Damm et al. (2025), https://huggingface.co/facebook/dinov2-base
-# Grad-CAM: Selvaraju et al. (2017), model-aware PyTorch implementation in cam.py
+# jacobgil/pytorch-grad-cam -- https://github.com/jacobgil/pytorch-grad-cam
 
 import os
-import logging
-from threading import RLock
 import numpy as np
 import torch
 from PIL import Image
@@ -13,10 +11,9 @@ from transformers import AutoImageProcessor, AutoModelForImageClassification, Au
 import timm
 from albumentations import Compose, Resize, Normalize
 from albumentations.pytorch import ToTensorV2
-from .cam import generate_gradcam
+from pytorch_grad_cam import GradCAM
+from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 
-logger = logging.getLogger(__name__)
-_CLASSIFIER_LOCK = RLock()  # CAM forward hooks must not overlap requests
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 ML_MODELS_DIR = os.path.join(settings.BASE_DIR.parent, "ml", "models")
 CLASS_NAMES = ["black_sigatoka", "healthy"]
@@ -71,7 +68,6 @@ def _load_active_classifier():
         )
         model.load_state_dict(torch.load(config["weights"], map_location=DEVICE))
     model.to(DEVICE).eval()
-    model.requires_grad_(False)  # inference only; input-gradient CAM still works
     return model, processor, config
 
 
@@ -119,9 +115,23 @@ def _classify(pil_image):
 
 
 def _explain(pixel_values, predicted_idx):
-    # Grad-CAM over the predicted class logit, not the probabilities or
-    # Hugging Face ModelOutput object. See detector/cam.py for layer choices.
-    return generate_gradcam(classifier_model, ACTIVE_MODEL_KEY, pixel_values, predicted_idx)
+    if classifier_config["kind"] == "timm":
+        cam = GradCAM(model=classifier_model, target_layers=[classifier_model.conv_head])
+    elif classifier_config.get("hierarchical"):
+        def reshape_transform(tensor, height=7, width=7):
+            result = tensor.reshape(tensor.size(0), height, width, tensor.size(-1))
+            return result.transpose(2, 3).transpose(1, 2)
+
+        cam = GradCAM(
+            model=classifier_model,
+            target_layers=classifier_config["cam_layer"](classifier_model),
+            reshape_transform=reshape_transform,
+        )
+    else:
+        cam = GradCAM(model=classifier_model, target_layers=classifier_config["cam_layer"](classifier_model))
+
+    grayscale_cam = cam(input_tensor=pixel_values, targets=[ClassifierOutputTarget(predicted_idx)])
+    return grayscale_cam[0]
 
 
 def predict_image(image_file):
@@ -140,28 +150,13 @@ def predict_image(image_file):
             "is_known_disease": False,
             "is_banana_leaf": None,  # gate doesn't distinguish which negative case
             "heatmap_array": None,
-            "gate_nearest_class": nearest_class,
-            "gate_distance": round(float(distance), 5),
-            "gate_threshold": GATE_THRESHOLD,
-            "classifier_key": ACTIVE_MODEL_KEY,
         }
 
-    # Hooks belong to a shared classifier: serialize all forward calls while
-    # the Grad-CAM hook is registered so another scan cannot overwrite it.
-    with _CLASSIFIER_LOCK:
-        label, confidence, pixel_values, predicted_idx = _classify(pil_image)
-        heatmap_error = None
-        try:
-            heatmap_array = _explain(pixel_values, predicted_idx)
-        except Exception as exc:
-            # Preserve the prediction, but NEVER silently swallow the actual CAM
-            # error: Django logs and (in DEBUG mode) the result page report it.
-            logger.exception("Grad-CAM failed for active model %s", ACTIVE_MODEL_KEY)
-            heatmap_array = None
-            heatmap_error = (
-                f"Grad-CAM ({ACTIVE_MODEL_KEY}): {type(exc).__name__}: {exc}"
-                if settings.DEBUG else "Grad-CAM could not be generated for this scan."
-            )
+    label, confidence, pixel_values, predicted_idx = _classify(pil_image)
+    try:
+        heatmap_array = _explain(pixel_values, predicted_idx)
+    except Exception:
+        heatmap_array = None  # never let explainability break a prediction
 
     return {
         "label": label,
@@ -169,9 +164,4 @@ def predict_image(image_file):
         "is_known_disease": True,
         "is_banana_leaf": True,
         "heatmap_array": heatmap_array,
-        "heatmap_error": heatmap_error,
-        "gate_nearest_class": nearest_class,
-        "gate_distance": round(float(distance), 5),
-        "gate_threshold": GATE_THRESHOLD,
-        "classifier_key": ACTIVE_MODEL_KEY,
     }

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How it works · Black Sigatoka Detector</title>
+  <meta name="description" content="Screen a banana leaf photo for Black Sigatoka, a notifiable banana disease in Australia.">
+  <link rel="icon" href="data:image/svg+xml,<svg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'><path d='M3.5 27.5C5 13 15 4.5 28.5 3.5 28 17 19.5 26.5 5 28.5Z' fill='%2324513A'/><path d='M4.5 27.5 27 5' stroke='%23D8E6C2' stroke-width='1.6' stroke-linecap='round'/><ellipse cx='19.5' cy='17.5' rx='3' ry='1.3' transform='rotate(-38 19.5 17.5)' fill='%23E6C446' opacity='.7'/><ellipse cx='19.5' cy='17.5' rx='2' ry='.8' transform='rotate(-38 19.5 17.5)' fill='%233B2416'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400..600&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3.5 27.5C5 13 15 4.5 28.5 3.5 28 17 19.5 26.5 5 28.5Z" fill="#24513A"/><path d="M4.5 27.5 27 5" stroke="#D8E6C2" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="19.5" cy="17.5" rx="3" ry="1.3" transform="rotate(-38 19.5 17.5)" fill="#E6C446" opacity=".7"/><ellipse cx="19.5" cy="17.5" rx="2" ry=".8" transform="rotate(-38 19.5 17.5)" fill="#3B2416"/></svg>Black Sigatoka Detector</a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="index.html">Home</a>
+        <a href="upload.html">Check a leaf</a>
+        <a href="about.html" aria-current="page">How it works</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <div class="wrap prose">
+      <div class="page-head">
+        <h1>How it works</h1>
+        <p>What happens to your photo, how the model was chosen, and where its limits are.</p>
+      </div>
+
+      <section>
+        <h2>From photo to result</h2>
+        <ol class="pipeline">
+          <li><span class="n">1</span><div><strong>Quality check on your device.</strong> Sharpness, size, lighting and contrast are measured in the browser. Photos that fail are never uploaded.</div></li>
+          <li><span class="n">2</span><div><strong>Is this a leaf the model knows?</strong> A DINOv2 vision model compares the photo with the healthy and Black Sigatoka leaves in our training set. If it isn't similar enough, the tool stops and says so instead of forcing a guess.</div></li>
+          <li><span class="n">3</span><div><strong>Classification.</strong> The chosen classifier decides between healthy and Black Sigatoka and reports its confidence.</div></li>
+          <li><span class="n">4</span><div><strong>Explanation.</strong> Grad-CAM traces the decision back to the regions of the photo that drove it, shown as the heatmap on your report.</div></li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Choosing the model</h2>
+        <p>We fine-tuned four modern image models on the same cleaned dataset and scored each with the same evaluation script on photos held back from training. The best performer runs behind this site.</p>
+        <p id="candidates-note" class="panel-note"></p>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th scope="col">Model</th><th scope="col">Validation accuracy</th></tr></thead>
+            <tbody id="candidates"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="biosecurity">
+        <h2>Biosecurity context</h2>
+        <p>Black Sigatoka (<em>Pseudocercospora fijiensis</em>) is a fungal leaf disease not established on the Australian mainland, but present on outer Torres Strait islands and in every country to Australia's north. It was detected on an inner Torres Strait island in 2023 and is under active surveillance by Northern Australia Quarantine Strategy plant pathologists based in Darwin.</p>
+        <p>It is a notifiable plant disease. A 2001 outbreak in north Queensland's main commercial banana-growing region triggered a multi-year eradication response, showing the cost of late detection.</p>
+      </section>
+
+      <section>
+        <h2>Limitations</h2>
+        <ul>
+          <li>This is a first-pass screening aid. It doesn't replace a laboratory test or a plant pathologist.</li>
+          <li>It only distinguishes healthy leaves from Black Sigatoka. Other diseases, such as Yellow Sigatoka, are reported as "not recognised" rather than named.</li>
+          <li>Accuracy depends on the training photos and may drop for unusual lighting, angles, cultivars or very early symptoms.</li>
+          <li>Report suspected cases to the Exotic Plant Pest Hotline on <a href="tel:1800084881">1800 084 881</a>, whatever this tool shows.</li>
+        </ul>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>HIT401 Group 27 capstone project. A screening aid, not a laboratory diagnosis.</p>
+      <p>Exotic Plant Pest Hotline: <a href="tel:1800084881">1800 084 881</a></p>
+    </div>
+  </footer>
+  <script src="/static/js/model-info.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const body = document.getElementById("candidates");
+      [...MODEL_INFO.candidates].sort((a, b) => b.accuracy - a.accuracy).forEach((c) => {
+        const tr = document.createElement("tr");
+        if (c.key === MODEL_INFO.activeKey) tr.className = "is-active";
+        tr.innerHTML = "<td></td><td></td>";
+        tr.cells[0].textContent = c.name + (c.key === MODEL_INFO.activeKey ? " (running on this site)" : "");
+        tr.cells[1].textContent = formatPct(c.accuracy);
+        body.appendChild(tr);
+      });
+      if (MODEL_INFO.isPlaceholder) {
+        document.getElementById("candidates-note").textContent =
+          "Sample figures shown until the team adds real results from evaluate.py.";
+      }
+    });
+  </script>
+</body>
+</html>

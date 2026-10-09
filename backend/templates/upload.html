@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Check a leaf · Black Sigatoka Detector</title>
+  <meta name="description" content="Screen a banana leaf photo for Black Sigatoka, a notifiable banana disease in Australia.">
+  <link rel="icon" href="data:image/svg+xml,<svg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'><path d='M3.5 27.5C5 13 15 4.5 28.5 3.5 28 17 19.5 26.5 5 28.5Z' fill='%2324513A'/><path d='M4.5 27.5 27 5' stroke='%23D8E6C2' stroke-width='1.6' stroke-linecap='round'/><ellipse cx='19.5' cy='17.5' rx='3' ry='1.3' transform='rotate(-38 19.5 17.5)' fill='%23E6C446' opacity='.7'/><ellipse cx='19.5' cy='17.5' rx='2' ry='.8' transform='rotate(-38 19.5 17.5)' fill='%233B2416'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400..600&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3.5 27.5C5 13 15 4.5 28.5 3.5 28 17 19.5 26.5 5 28.5Z" fill="#24513A"/><path d="M4.5 27.5 27 5" stroke="#D8E6C2" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="19.5" cy="17.5" rx="3" ry="1.3" transform="rotate(-38 19.5 17.5)" fill="#E6C446" opacity=".7"/><ellipse cx="19.5" cy="17.5" rx="2" ry=".8" transform="rotate(-38 19.5 17.5)" fill="#3B2416"/></svg>Black Sigatoka Detector</a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="index.html">Home</a>
+        <a href="upload.html" aria-current="page">Check a leaf</a>
+        <a href="about.html">How it works</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <div class="wrap">
+      <div class="page-head">
+        <h1>Check a leaf</h1>
+        <p>Upload one clear photo of a single banana leaf. It's checked for quality on your device before anything is sent.</p>
+        <p class="status-line" id="mock-note" hidden>Demo mode: results are simulated and don't come from the model.</p>
+      </div>
+
+      <div class="upload-layout">
+        <div>
+          <div class="drop-zone" id="drop-zone">
+            <div class="dz-empty">
+              <svg class="dz-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 38C10 20 22 9 40 8c0 18-12 30-30 31Z"/><path d="M9 38 38 10"/><path d="M24 20v10M19 25l5-5 5 5" stroke-width="2.4"/></svg>
+              <p class="dz-title">Drop a leaf photo here</p>
+              <p class="dz-sub">or choose one from your device</p>
+              <div class="dz-actions">
+                <button type="button" class="btn btn-primary" id="choose-btn">Choose photo</button>
+                <button type="button" class="btn btn-secondary" id="camera-btn">Take photo</button>
+              </div>
+              <p class="dz-hint">JPG, PNG or WebP up to 15 MB. You can also paste an image.</p>
+            </div>
+            <div class="dz-preview">
+              <img id="preview" alt="Selected leaf photo">
+              <button type="button" class="btn btn-secondary dz-change" id="change-btn">Change photo</button>
+              <span class="dz-fileinfo" id="file-info"></span>
+            </div>
+            <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" hidden>
+            <input type="file" id="camera-input" accept="image/*" capture="environment" hidden>
+          </div>
+
+          <div class="submit-row">
+            <button class="btn btn-primary" id="submit-btn" disabled>Analyse leaf</button>
+            <p class="status-line" id="status-line" role="alert"></p>
+          </div>
+
+          <div class="progress" id="progress" aria-live="polite">
+            <ol>
+              <li>Uploading photo</li>
+              <li>Checking it looks like a banana leaf</li>
+              <li>Looking for Black Sigatoka symptoms</li>
+              <li>Mapping where the model looked</li>
+            </ol>
+          </div>
+        </div>
+
+        <aside class="panel">
+          <h2>Photo quality</h2>
+          <p class="quality-summary" id="quality-summary" data-state="idle" aria-live="polite">Choose a photo to run the checks.</p>
+          <ul class="checklist" id="checklist"></ul>
+          <h3>For the most reliable result</h3>
+          <ul class="tips">
+            <li>One leaf, filling most of the frame</li>
+            <li>Daylight or shade, no flash or harsh glare</li>
+            <li>Tap the screen on the leaf to focus before shooting</li>
+            <li>Include the underside if you see streaks there</li>
+          </ul>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>HIT401 Group 27 capstone project. A screening aid, not a laboratory diagnosis.</p>
+      <p>Exotic Plant Pest Hotline: <a href="tel:1800084881">1800 084 881</a></p>
+    </div>
+  </footer>
+  <!-- Live camera access uses getUserMedia on localhost/HTTPS. -->
+  <dialog id="camera-dialog" class="camera-dialog" aria-labelledby="camera-title">
+    <div class="camera-panel">
+      <div class="camera-head">
+        <div>
+          <h2 id="camera-title">Take a leaf photo</h2>
+          <p>Position the leaf in the frame, then capture the image.</p>
+        </div>
+        <button type="button" id="camera-close" class="camera-close" aria-label="Close camera">×</button>
+      </div>
+      <video id="camera-video" autoplay playsinline muted aria-label="Live camera preview"></video>
+      <canvas id="camera-canvas" hidden></canvas>
+      <p id="camera-message" class="camera-message" role="status" aria-live="polite"></p>
+      <div class="camera-buttons">
+        <button type="button" class="btn btn-primary" id="camera-snap" disabled>Capture photo</button>
+        <button type="button" class="btn btn-secondary" id="camera-native">Use device camera</button>
+        <button type="button" class="btn btn-secondary" id="camera-cancel">Cancel</button>
+      </div>
+    </div>
+  </dialog>
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/quality.js"></script>
+  <script src="/static/js/upload.js"></script>
+</body>
+</html>

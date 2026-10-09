@@ -9,4 +9,5 @@ pillow
 torch
 transformers
 timm
+grad-cam
 albumentations

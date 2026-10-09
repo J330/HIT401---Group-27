@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Black Sigatoka Detector</title>
+  <meta name="description" content="Screen a banana leaf photo for Black Sigatoka, a notifiable banana disease in Australia.">
+  <link rel="icon" href="data:image/svg+xml,<svg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'><path d='M3.5 27.5C5 13 15 4.5 28.5 3.5 28 17 19.5 26.5 5 28.5Z' fill='%2324513A'/><path d='M4.5 27.5 27 5' stroke='%23D8E6C2' stroke-width='1.6' stroke-linecap='round'/><ellipse cx='19.5' cy='17.5' rx='3' ry='1.3' transform='rotate(-38 19.5 17.5)' fill='%23E6C446' opacity='.7'/><ellipse cx='19.5' cy='17.5' rx='2' ry='.8' transform='rotate(-38 19.5 17.5)' fill='%233B2416'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400..600&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="index.html"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3.5 27.5C5 13 15 4.5 28.5 3.5 28 17 19.5 26.5 5 28.5Z" fill="#24513A"/><path d="M4.5 27.5 27 5" stroke="#D8E6C2" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="19.5" cy="17.5" rx="3" ry="1.3" transform="rotate(-38 19.5 17.5)" fill="#E6C446" opacity=".7"/><ellipse cx="19.5" cy="17.5" rx="2" ry=".8" transform="rotate(-38 19.5 17.5)" fill="#3B2416"/></svg>Black Sigatoka Detector</a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="index.html" aria-current="page">Home</a>
+        <a href="upload.html">Check a leaf</a>
+        <a href="about.html">How it works</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <h1>Check a banana leaf for Black Sigatoka</h1>
+          <p class="hero-lead">Take a photo of a leaf and get a screening result in seconds, with a map of exactly where the model looked.</p>
+          <div class="btn-row">
+            <a class="btn btn-primary" href="upload.html">Check a leaf</a>
+            <a class="btn btn-secondary" href="about.html">How it works</a>
+          </div>
+        </div>
+        <figure class="hero-figure">
+          <svg class="hero-leaf" viewBox="-20 -200 760 400" role="img" aria-label="Illustration of a banana leaf with dark streak lesions along its veins, the typical pattern of Black Sigatoka">
+  <defs>
+    <clipPath id="leafClip"><path d="M0.0,-47.9 L10.0,-55.6 L20.0,-62.4 L30.0,-68.5 L40.0,-73.9 L50.0,-79.0 L60.0,-83.6 L70.0,-87.8 L80.0,-91.7 L90.0,-95.3 L100.0,-98.7 L110.0,-101.8 L120.0,-104.7 L130.0,-107.3 L140.0,-109.8 L150.0,-112.0 L160.0,-114.1 L170.0,-116.0 L180.0,-117.7 L190.0,-119.2 L200.0,-120.6 L210.0,-121.8 L220.0,-122.8 L230.0,-123.7 L240.0,-124.5 L250.0,-125.1 L260.0,-125.5 L270.0,-125.8 L280.0,-126.0 L290.0,-126.1 L300.0,-126.0 L310.0,-125.8 L320.0,-125.5 L330.0,-125.0 L340.0,-124.4 L350.0,-123.8 L360.0,-122.9 L370.0,-122.0 L380.0,-121.0 L390.0,-119.8 L400.0,-118.6 L410.0,-117.2 L420.0,-115.8 L430.0,-114.2 L440.0,-112.5 L450.0,-110.8 L460.0,-108.9 L470.0,-106.9 L480.0,-104.9 L490.0,-102.7 L500.0,-100.5 L510.0,-98.1 L520.0,-95.7 L530.0,-93.2 L540.0,-90.5 L550.0,-87.8 L560.0,-85.0 L570.0,-82.1 L580.0,-79.1 L590.0,-76.0 L600.0,-72.7 L610.0,-69.4 L620.0,-65.9 L630.0,-62.3 L640.0,-58.6 L650.0,-54.7 L660.0,-50.6 L670.0,-46.2 L680.0,-41.6 L690.0,-36.6 L700.0,-31.1 L700.0,31.1 L690.0,36.6 L680.0,41.6 L670.0,46.2 L660.0,50.6 L650.0,54.7 L640.0,58.6 L630.0,62.3 L620.0,65.9 L610.0,69.4 L600.0,72.7 L590.0,76.0 L580.0,79.1 L570.0,82.1 L560.0,85.0 L550.0,87.8 L540.0,90.5 L530.0,93.2 L520.0,95.7 L510.0,98.1 L500.0,100.5 L490.0,102.7 L480.0,104.9 L470.0,106.9 L460.0,108.9 L450.0,110.8 L440.0,112.5 L430.0,114.2 L420.0,115.8 L410.0,117.2 L400.0,118.6 L390.0,119.8 L380.0,121.0 L370.0,122.0 L360.0,122.9 L350.0,123.8 L340.0,124.4 L330.0,125.0 L320.0,125.5 L310.0,125.8 L300.0,126.0 L290.0,126.1 L280.0,126.0 L270.0,125.8 L260.0,125.5 L250.0,125.1 L240.0,124.5 L230.0,123.7 L220.0,122.8 L210.0,121.8 L200.0,120.6 L190.0,119.2 L180.0,117.7 L170.0,116.0 L160.0,114.1 L150.0,112.0 L140.0,109.8 L130.0,107.3 L120.0,104.7 L110.0,101.8 L100.0,98.7 L90.0,95.3 L80.0,91.7 L70.0,87.8 L60.0,83.6 L50.0,79.0 L40.0,73.9 L30.0,68.5 L20.0,62.4 L10.0,55.6 L0.0,47.9 Z"/></clipPath>
+    <linearGradient id="leafFill" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2E6A45"/><stop offset="1" stop-color="#4C8A4F"/></linearGradient>
+  </defs>
+  <g transform="rotate(-9 350 0)">
+    <path d="M0.0,-47.9 L10.0,-55.6 L20.0,-62.4 L30.0,-68.5 L40.0,-73.9 L50.0,-79.0 L60.0,-83.6 L70.0,-87.8 L80.0,-91.7 L90.0,-95.3 L100.0,-98.7 L110.0,-101.8 L120.0,-104.7 L130.0,-107.3 L140.0,-109.8 L150.0,-112.0 L160.0,-114.1 L170.0,-116.0 L180.0,-117.7 L190.0,-119.2 L200.0,-120.6 L210.0,-121.8 L220.0,-122.8 L230.0,-123.7 L240.0,-124.5 L250.0,-125.1 L260.0,-125.5 L270.0,-125.8 L280.0,-126.0 L290.0,-126.1 L300.0,-126.0 L310.0,-125.8 L320.0,-125.5 L330.0,-125.0 L340.0,-124.4 L350.0,-123.8 L360.0,-122.9 L370.0,-122.0 L380.0,-121.0 L390.0,-119.8 L400.0,-118.6 L410.0,-117.2 L420.0,-115.8 L430.0,-114.2 L440.0,-112.5 L450.0,-110.8 L460.0,-108.9 L470.0,-106.9 L480.0,-104.9 L490.0,-102.7 L500.0,-100.5 L510.0,-98.1 L520.0,-95.7 L530.0,-93.2 L540.0,-90.5 L550.0,-87.8 L560.0,-85.0 L570.0,-82.1 L580.0,-79.1 L590.0,-76.0 L600.0,-72.7 L610.0,-69.4 L620.0,-65.9 L630.0,-62.3 L640.0,-58.6 L650.0,-54.7 L660.0,-50.6 L670.0,-46.2 L680.0,-41.6 L690.0,-36.6 L700.0,-31.1 L700.0,31.1 L690.0,36.6 L680.0,41.6 L670.0,46.2 L660.0,50.6 L650.0,54.7 L640.0,58.6 L630.0,62.3 L620.0,65.9 L610.0,69.4 L600.0,72.7 L590.0,76.0 L580.0,79.1 L570.0,82.1 L560.0,85.0 L550.0,87.8 L540.0,90.5 L530.0,93.2 L520.0,95.7 L510.0,98.1 L500.0,100.5 L490.0,102.7 L480.0,104.9 L470.0,106.9 L460.0,108.9 L450.0,110.8 L440.0,112.5 L430.0,114.2 L420.0,115.8 L410.0,117.2 L400.0,118.6 L390.0,119.8 L380.0,121.0 L370.0,122.0 L360.0,122.9 L350.0,123.8 L340.0,124.4 L330.0,125.0 L320.0,125.5 L310.0,125.8 L300.0,126.0 L290.0,126.1 L280.0,126.0 L270.0,125.8 L260.0,125.5 L250.0,125.1 L240.0,124.5 L230.0,123.7 L220.0,122.8 L210.0,121.8 L200.0,120.6 L190.0,119.2 L180.0,117.7 L170.0,116.0 L160.0,114.1 L150.0,112.0 L140.0,109.8 L130.0,107.3 L120.0,104.7 L110.0,101.8 L100.0,98.7 L90.0,95.3 L80.0,91.7 L70.0,87.8 L60.0,83.6 L50.0,79.0 L40.0,73.9 L30.0,68.5 L20.0,62.4 L10.0,55.6 L0.0,47.9 Z" fill="url(#leafFill)"/>
+    <g clip-path="url(#leafClip)">
+      <g class="veins"><path d="M18,-4 Q30,-43 51,-82"/><path d="M18,4 Q30,43 51,82"/><path d="M29,-4 Q41,-46 64,-87"/><path d="M29,4 Q41,46 64,87"/><path d="M40,-4 Q53,-48 77,-92"/><path d="M40,4 Q53,48 77,92"/><path d="M51,-4 Q65,-51 90,-96"/><path d="M51,4 Q65,51 90,96"/><path d="M62,-4 Q76,-53 102,-100"/><path d="M62,4 Q76,53 102,100"/><path d="M73,-4 Q88,-55 115,-104"/><path d="M73,4 Q88,55 115,104"/><path d="M84,-4 Q99,-57 127,-107"/><path d="M84,4 Q99,57 127,107"/><path d="M95,-4 Q111,-58 140,-110"/><path d="M95,4 Q111,58 140,110"/><path d="M106,-4 Q122,-60 152,-113"/><path d="M106,4 Q122,60 152,113"/><path d="M117,-4 Q134,-61 164,-115"/><path d="M117,4 Q134,61 164,115"/><path d="M128,-4 Q145,-63 176,-118"/><path d="M128,4 Q145,63 176,118"/><path d="M139,-4 Q156,-64 188,-120"/><path d="M139,4 Q156,64 188,120"/><path d="M150,-4 Q168,-65 199,-122"/><path d="M150,4 Q168,65 199,122"/><path d="M161,-4 Q179,-66 211,-123"/><path d="M161,4 Q179,66 211,123"/><path d="M172,-4 Q190,-66 223,-125"/><path d="M172,4 Q190,66 223,125"/><path d="M183,-4 Q201,-67 234,-126"/><path d="M183,4 Q201,67 234,126"/><path d="M194,-4 Q212,-68 246,-127"/><path d="M194,4 Q212,68 246,127"/><path d="M205,-4 Q224,-68 257,-128"/><path d="M205,4 Q224,68 257,128"/><path d="M216,-4 Q235,-69 268,-129"/><path d="M216,4 Q235,69 268,129"/><path d="M227,-4 Q246,-69 280,-129"/><path d="M227,4 Q246,69 280,129"/><path d="M238,-4 Q257,-69 291,-130"/><path d="M238,4 Q257,69 291,130"/><path d="M249,-4 Q268,-69 302,-130"/><path d="M249,4 Q268,69 302,130"/><path d="M260,-4 Q279,-69 313,-130"/><path d="M260,4 Q279,69 313,130"/><path d="M271,-4 Q290,-69 324,-130"/><path d="M271,4 Q290,69 324,130"/><path d="M282,-4 Q301,-69 335,-130"/><path d="M282,4 Q301,69 335,130"/><path d="M293,-4 Q312,-69 346,-129"/><path d="M293,4 Q312,69 346,129"/><path d="M304,-4 Q323,-69 356,-129"/><path d="M304,4 Q323,69 356,129"/><path d="M315,-4 Q334,-68 367,-128"/><path d="M315,4 Q334,68 367,128"/><path d="M326,-4 Q344,-68 378,-127"/><path d="M326,4 Q344,68 378,127"/><path d="M337,-4 Q355,-67 388,-126"/><path d="M337,4 Q355,67 388,126"/><path d="M348,-4 Q366,-67 399,-125"/><path d="M348,4 Q366,67 399,125"/><path d="M359,-4 Q377,-66 409,-124"/><path d="M359,4 Q377,66 409,124"/><path d="M370,-4 Q388,-65 420,-123"/><path d="M370,4 Q388,65 420,123"/><path d="M381,-4 Q399,-64 430,-121"/><path d="M381,4 Q399,64 430,121"/><path d="M392,-4 Q409,-64 440,-119"/><path d="M392,4 Q409,64 440,119"/><path d="M403,-4 Q420,-63 451,-118"/><path d="M403,4 Q420,63 451,118"/><path d="M414,-4 Q431,-62 461,-116"/><path d="M414,4 Q431,62 461,116"/><path d="M425,-4 Q441,-60 471,-114"/><path d="M425,4 Q441,60 471,114"/><path d="M436,-4 Q452,-59 481,-112"/><path d="M436,4 Q452,59 481,112"/><path d="M447,-4 Q463,-58 491,-110"/><path d="M447,4 Q463,58 491,110"/><path d="M458,-4 Q473,-57 501,-107"/><path d="M458,4 Q473,57 501,107"/><path d="M469,-4 Q484,-55 511,-105"/><path d="M469,4 Q484,55 511,105"/><path d="M480,-4 Q495,-54 521,-102"/><path d="M480,4 Q495,54 521,102"/><path d="M491,-4 Q505,-52 531,-99"/><path d="M491,4 Q505,52 531,99"/><path d="M502,-4 Q516,-51 541,-97"/><path d="M502,4 Q516,51 541,97"/><path d="M513,-4 Q526,-49 551,-94"/><path d="M513,4 Q526,49 551,94"/><path d="M524,-4 Q537,-48 560,-91"/><path d="M524,4 Q537,48 560,91"/><path d="M535,-4 Q548,-46 570,-88"/><path d="M535,4 Q548,46 570,88"/><path d="M546,-4 Q558,-44 580,-84"/><path d="M546,4 Q558,44 580,84"/><path d="M557,-4 Q569,-42 589,-81"/><path d="M557,4 Q569,42 589,81"/><path d="M568,-4 Q579,-40 599,-77"/><path d="M568,4 Q579,40 599,77"/><path d="M579,-4 Q589,-38 608,-74"/><path d="M579,4 Q589,38 608,74"/><path d="M590,-4 Q600,-36 618,-70"/><path d="M590,4 Q600,36 618,70"/><path d="M601,-4 Q610,-34 627,-66"/><path d="M601,4 Q610,34 627,66"/><path d="M612,-4 Q621,-32 636,-62"/><path d="M612,4 Q621,32 636,62"/><path d="M623,-4 Q631,-29 645,-57"/><path d="M623,4 Q631,29 645,57"/><path d="M634,-4 Q641,-27 655,-53"/><path d="M634,4 Q641,27 655,53"/><path d="M645,-4 Q652,-24 663,-48"/><path d="M645,4 Q652,24 663,48"/><path d="M656,-4 Q662,-21 672,-43"/><path d="M656,4 Q662,21 672,43"/><path d="M667,-4 Q672,-18 681,-37"/><path d="M667,4 Q672,18 681,37"/><path d="M678,-4 Q682,-14 689,-30"/><path d="M678,4 Q682,14 689,30"/></g>
+      <g class="lesions"><g class="lesion" style="--d:0.40s" transform="translate(546,-46) rotate(-55)"><ellipse class="halo" rx="11.0" ry="6.1"/><ellipse class="streak" rx="6.9" ry="1.4"/></g><g class="lesion" style="--d:0.45s" transform="translate(505,57) rotate(56)"><ellipse class="halo" rx="12.3" ry="9.4"/><ellipse class="streak" rx="7.7" ry="2.1"/></g><g class="lesion" style="--d:0.49s" transform="translate(487,82) rotate(54)"><ellipse class="halo" rx="20.3" ry="7.9"/><ellipse class="streak" rx="12.7" ry="2.6"/><ellipse class="core" rx="5.1" ry="0.9"/></g><g class="lesion" style="--d:0.54s" transform="translate(462,86) rotate(55)"><ellipse class="halo" rx="25.3" ry="4.9"/><ellipse class="streak" rx="15.8" ry="1.9"/><ellipse class="core" rx="6.3" ry="0.6"/></g><g class="lesion" style="--d:0.58s" transform="translate(670,-29) rotate(-57)"><ellipse class="halo" rx="32.1" ry="7.9"/><ellipse class="streak" rx="20.1" ry="2.6"/><ellipse class="core" rx="8.0" ry="0.9"/></g><g class="lesion" style="--d:0.62s" transform="translate(386,-52) rotate(-47)"><ellipse class="halo" rx="18.8" ry="9.5"/><ellipse class="streak" rx="11.7" ry="2.9"/><ellipse class="core" rx="4.7" ry="1.1"/></g><g class="lesion" style="--d:0.67s" transform="translate(602,59) rotate(53)"><ellipse class="halo" rx="13.8" ry="8.4"/><ellipse class="streak" rx="8.6" ry="1.9"/></g><g class="lesion" style="--d:0.72s" transform="translate(401,54) rotate(58)"><ellipse class="halo" rx="7.9" ry="8.8"/><ellipse class="streak" rx="5.0" ry="2.0"/></g><g class="lesion" style="--d:0.76s" transform="translate(432,-79) rotate(-58)"><ellipse class="halo" rx="24.2" ry="9.3"/><ellipse class="streak" rx="15.1" ry="2.9"/><ellipse class="core" rx="6.0" ry="1.1"/></g><g class="lesion" style="--d:0.80s" transform="translate(478,60) rotate(56)"><ellipse class="halo" rx="11.8" ry="6.6"/><ellipse class="streak" rx="7.3" ry="1.5"/></g><g class="lesion" style="--d:0.85s" transform="translate(496,-51) rotate(-56)"><ellipse class="halo" rx="22.0" ry="7.7"/><ellipse class="streak" rx="13.8" ry="2.5"/><ellipse class="core" rx="5.5" ry="0.9"/></g><g class="lesion" style="--d:0.90s" transform="translate(427,67) rotate(54)"><ellipse class="halo" rx="12.9" ry="8.9"/><ellipse class="streak" rx="8.0" ry="2.0"/></g><g class="lesion" style="--d:0.94s" transform="translate(564,44) rotate(52)"><ellipse class="halo" rx="19.8" ry="7.8"/><ellipse class="streak" rx="12.4" ry="2.6"/><ellipse class="core" rx="5.0" ry="0.9"/></g><g class="lesion" style="--d:0.98s" transform="translate(645,50) rotate(52)"><ellipse class="halo" rx="22.5" ry="9.7"/><ellipse class="streak" rx="14.1" ry="3.0"/><ellipse class="core" rx="5.6" ry="1.1"/></g><g class="lesion" style="--d:1.03s" transform="translate(346,-48) rotate(-49)"><ellipse class="halo" rx="11.1" ry="7.9"/><ellipse class="streak" rx="7.0" ry="1.8"/></g><g class="lesion" style="--d:1.07s" transform="translate(337,-75) rotate(-50)"><ellipse class="halo" rx="17.0" ry="5.8"/><ellipse class="streak" rx="10.6" ry="2.1"/><ellipse class="core" rx="4.2" ry="0.7"/></g><g class="lesion" style="--d:1.12s" transform="translate(664,39) rotate(54)"><ellipse class="halo" rx="16.1" ry="5.8"/><ellipse class="streak" rx="10.1" ry="2.1"/><ellipse class="core" rx="4.0" ry="0.7"/></g><g class="lesion" style="--d:1.17s" transform="translate(618,56) rotate(57)"><ellipse class="halo" rx="11.8" ry="9.8"/><ellipse class="streak" rx="7.4" ry="2.2"/></g><g class="lesion" style="--d:1.21s" transform="translate(316,108) rotate(50)"><ellipse class="halo" rx="8.4" ry="7.2"/><ellipse class="streak" rx="5.3" ry="1.6"/></g><g class="lesion" style="--d:1.25s" transform="translate(613,33) rotate(51)"><ellipse class="halo" rx="16.2" ry="8.2"/><ellipse class="streak" rx="10.2" ry="2.7"/><ellipse class="core" rx="4.1" ry="0.9"/></g><g class="lesion" style="--d:1.30s" transform="translate(361,-77) rotate(-49)"><ellipse class="halo" rx="13.5" ry="6.4"/><ellipse class="streak" rx="8.4" ry="1.4"/></g><g class="lesion" style="--d:1.34s" transform="translate(377,95) rotate(51)"><ellipse class="halo" rx="15.8" ry="5.1"/><ellipse class="streak" rx="9.9" ry="2.0"/><ellipse class="core" rx="3.9" ry="0.6"/></g><g class="lesion" style="--d:1.39s" transform="translate(386,86) rotate(54)"><ellipse class="halo" rx="8.7" ry="7.0"/><ellipse class="streak" rx="5.4" ry="1.6"/></g><g class="lesion" style="--d:1.44s" transform="translate(416,48) rotate(57)"><ellipse class="halo" rx="13.8" ry="5.9"/><ellipse class="streak" rx="8.6" ry="1.3"/></g><g class="lesion" style="--d:1.48s" transform="translate(586,-60) rotate(-58)"><ellipse class="halo" rx="29.0" ry="9.5"/><ellipse class="streak" rx="18.1" ry="3.0"/><ellipse class="core" rx="7.3" ry="1.1"/></g><g class="lesion" style="--d:1.52s" transform="translate(520,-80) rotate(-53)"><ellipse class="halo" rx="10.2" ry="6.3"/><ellipse class="streak" rx="6.3" ry="1.4"/></g><g class="lesion" style="--d:1.57s" transform="translate(505,68) rotate(53)"><ellipse class="halo" rx="22.9" ry="6.7"/><ellipse class="streak" rx="14.3" ry="2.3"/><ellipse class="core" rx="5.7" ry="0.8"/></g><g class="lesion" style="--d:1.61s" transform="translate(541,53) rotate(49)"><ellipse class="halo" rx="9.6" ry="6.1"/><ellipse class="streak" rx="6.0" ry="1.4"/></g><g class="lesion" style="--d:1.66s" transform="translate(376,109) rotate(58)"><ellipse class="halo" rx="14.3" ry="5.2"/><ellipse class="streak" rx="8.9" ry="1.2"/></g><g class="lesion" style="--d:1.71s" transform="translate(526,-76) rotate(-48)"><ellipse class="halo" rx="22.3" ry="8.0"/><ellipse class="streak" rx="13.9" ry="2.6"/><ellipse class="core" rx="5.6" ry="0.9"/></g><g class="lesion" style="--d:1.75s" transform="translate(318,-118) rotate(-52)"><ellipse class="halo" rx="12.6" ry="8.2"/><ellipse class="streak" rx="7.9" ry="1.9"/></g><g class="lesion" style="--d:1.79s" transform="translate(351,-86) rotate(-53)"><ellipse class="halo" rx="20.8" ry="6.5"/><ellipse class="streak" rx="13.0" ry="2.3"/><ellipse class="core" rx="5.2" ry="0.7"/></g><g class="lesion" style="--d:1.84s" transform="translate(501,-58) rotate(-55)"><ellipse class="halo" rx="26.8" ry="5.2"/><ellipse class="streak" rx="16.7" ry="2.0"/><ellipse class="core" rx="6.7" ry="0.6"/></g><g class="lesion" style="--d:1.88s" transform="translate(431,-73) rotate(-55)"><ellipse class="halo" rx="16.0" ry="8.0"/><ellipse class="streak" rx="10.0" ry="2.6"/><ellipse class="core" rx="4.0" ry="0.9"/></g><g class="lesion" style="--d:1.93s" transform="translate(549,-70) rotate(-52)"><ellipse class="halo" rx="14.2" ry="8.5"/><ellipse class="streak" rx="8.9" ry="1.9"/></g><g class="lesion" style="--d:1.98s" transform="translate(341,-66) rotate(-57)"><ellipse class="halo" rx="12.5" ry="6.2"/><ellipse class="streak" rx="7.8" ry="1.4"/></g><g class="lesion" style="--d:2.02s" transform="translate(400,49) rotate(52)"><ellipse class="halo" rx="8.3" ry="5.1"/><ellipse class="streak" rx="5.2" ry="1.2"/></g><g class="lesion" style="--d:2.06s" transform="translate(622,59) rotate(48)"><ellipse class="halo" rx="26.9" ry="6.3"/><ellipse class="streak" rx="16.8" ry="2.2"/><ellipse class="core" rx="6.7" ry="0.7"/></g><g class="lesion" style="--d:2.11s" transform="translate(600,-61) rotate(-47)"><ellipse class="halo" rx="29.3" ry="6.2"/><ellipse class="streak" rx="18.3" ry="2.2"/><ellipse class="core" rx="7.3" ry="0.7"/></g><g class="lesion" style="--d:2.15s" transform="translate(316,93) rotate(56)"><ellipse class="halo" rx="19.3" ry="5.5"/><ellipse class="streak" rx="12.1" ry="2.0"/><ellipse class="core" rx="4.8" ry="0.6"/></g><g class="lesion" style="--d:2.20s" transform="translate(594,-66) rotate(-50)"><ellipse class="halo" rx="13.2" ry="8.5"/><ellipse class="streak" rx="8.3" ry="1.9"/></g><g class="lesion" style="--d:2.25s" transform="translate(309,46) rotate(53)"><ellipse class="halo" rx="12.9" ry="8.5"/><ellipse class="streak" rx="8.1" ry="1.9"/></g><g class="lesion" style="--d:2.29s" transform="translate(462,73) rotate(51)"><ellipse class="halo" rx="19.9" ry="5.5"/><ellipse class="streak" rx="12.4" ry="2.0"/><ellipse class="core" rx="5.0" ry="0.6"/></g><g class="lesion" style="--d:2.33s" transform="translate(617,31) rotate(53)"><ellipse class="halo" rx="20.6" ry="8.1"/><ellipse class="streak" rx="12.9" ry="2.6"/><ellipse class="core" rx="5.2" ry="0.9"/></g><g class="lesion" style="--d:2.38s" transform="translate(664,37) rotate(48)"><ellipse class="halo" rx="25.4" ry="6.5"/><ellipse class="streak" rx="15.8" ry="2.3"/><ellipse class="core" rx="6.3" ry="0.7"/></g><g class="lesion" style="--d:2.42s" transform="translate(428,91) rotate(49)"><ellipse class="halo" rx="13.4" ry="5.8"/><ellipse class="streak" rx="8.4" ry="1.3"/></g></g>
+    </g>
+    <g class="tears"><path d="M199,124 L172,56"/><path d="M283,132 L241,26"/><path d="M353,-131 L329,-72"/><path d="M439,122 L409,49"/><path d="M512,-106 L483,-32"/><path d="M592,82 L576,41"/><path d="M635,-65 L625,-39"/></g>
+    <path class="midrib" d="M-18,2 Q300,-2 700,0"/>
+  </g>
+</svg>
+          <figcaption>Black Sigatoka starts as fine streaks running along the leaf veins, which darken into spots with a yellow halo.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="band">
+      <div class="wrap">
+        <div class="band-head">
+          <h2>Three steps, under a minute</h2>
+        </div>
+        <ol class="steps">
+          <li>
+            <strong>Photograph one leaf</strong>
+            <p>In daylight, with the leaf filling most of the frame. Older, lower leaves show symptoms first.</p>
+          </li>
+          <li>
+            <strong>The photo is checked</strong>
+            <p>Blurry, dark or tiny photos are caught before upload, so you never get a result from an unusable image.</p>
+          </li>
+          <li>
+            <strong>Read your result</strong>
+            <p>See the verdict, how confident the model is, where it focused, and what to do next.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="band">
+      <div class="wrap">
+        <div class="band-head">
+          <h2>What the result can tell you</h2>
+          <p>The model was trained on healthy and Black Sigatoka banana leaves. Anything else is flagged rather than guessed at.</p>
+        </div>
+        <div class="outcomes">
+          <div class="outcome is-positive">
+            <h3>Black Sigatoka likely</h3>
+            <p>Symptoms match the disease. You'll get reporting steps and the hotline number.</p>
+          </div>
+          <div class="outcome is-healthy">
+            <h3>Leaf looks healthy</h3>
+            <p>No Black Sigatoka pattern found in the photographed leaf.</p>
+          </div>
+          <div class="outcome is-unknown">
+            <h3>Not recognised</h3>
+            <p>Another disease, another plant, or not a leaf. The tool won't name other diseases.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="band">
+      <div class="wrap context-grid">
+        <div>
+          <h2>Why early detection matters</h2>
+          <p>Black Sigatoka is a fungal disease that destroys banana leaf tissue and cuts fruit yield. It isn't established on the Australian mainland, but it is present on outer Torres Strait islands and in every country to Australia's north.</p>
+          <p>A 2001 outbreak in north Queensland's main growing region took a multi-year eradication effort to clear. Finding it early keeps the response small.</p>
+          <p><a href="about.html#biosecurity">More on the biosecurity context</a></p>
+        </div>
+        <aside class="callout">
+          <h3>Seen suspicious symptoms?</h3>
+          <a class="phone" href="tel:1800084881">1800 084 881</a>
+          <p>The Exotic Plant Pest Hotline connects you with your state's biosecurity team. Report suspected cases whatever this tool says.</p>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>HIT401 Group 27 capstone project. A screening aid, not a laboratory diagnosis.</p>
+      <p>Exotic Plant Pest Hotline: <a href="tel:1800084881">1800 084 881</a></p>
+    </div>
+  </footer>
+</body>
+</html>
