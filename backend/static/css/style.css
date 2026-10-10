@@ -369,8 +369,8 @@ main { flex: 1; padding-block: 3rem 4rem; }
 .viewer-stage canvas { object-fit: cover; image-rendering: auto; transition: opacity .2s; }
 .viewer-stage[data-fit="fill"] canvas { object-fit: fill; }
 .viewer-stage[data-mode="photo"] canvas { opacity: 0 !important; }
-.viewer-stage[data-mode="overlay"] img { filter: saturate(.96) brightness(.94) contrast(1.03); }
-.viewer-stage[data-mode="heatmap"] img { filter: grayscale(1) brightness(.12) contrast(1.18); }
+.viewer-stage[data-mode="overlay"] img { filter: none; } /* preserve neutral grey outside masked leaf */
+.viewer-stage[data-mode="heatmap"] img { filter: none; } /* show excluded background unchanged */
 .viewer-probe {
   position: absolute; pointer-events: none; transform: translate(-50%, -130%);
   background: rgba(24, 36, 28, .9); color: #fff; font-size: .82rem; font-weight: 600;
@@ -395,7 +395,7 @@ main { flex: 1; padding-block: 3rem 4rem; }
 input[type="range"] { accent-color: var(--leaf); width: 100%; }
 
 .legend { display: grid; grid-template-columns: auto 1fr auto; gap: .6rem; align-items: center; font-size: .85rem; color: var(--ink-soft); }
-.legend-bar { height: 10px; border-radius: 99px; background: linear-gradient(90deg, #081861 0%, #0a4cde 24%, #00beff 37%, #1ef5b7 51%, #ffee1c 64%, #ff8308 78%, #ff1d0c 91%, #c40000 100%); }
+.legend-bar { height: 10px; border-radius: 99px; background: linear-gradient(90deg, #0a2db9 0%, #1469f0 24%, #00beff 37%, #1ef5b7 51%, #ffee1c 64%, #ff8308 78%, #ff1d0c 91%, #c40000 100%); }
 .viewer-caption { font-size: .9rem; color: var(--ink-soft); margin: 0; }
 .viewer-empty { padding: .9rem 1.2rem; background: var(--unknown-tint); font-size: .92rem; margin: 0; max-width: none; }
 
@@ -644,3 +644,6 @@ details.explain p { font-size: .96rem; color: var(--ink-soft); }
 
 /* Keep the retake action right-aligned, including on narrow screens. */
 .actions-bar > a.btn-primary { margin-left: auto; }
+
+/* Optional preprocessing from the older HIT401 Django app. */
+.viewer-stage[data-mode="processed"] canvas { opacity: 0 !important; }

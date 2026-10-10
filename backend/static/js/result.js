@@ -40,10 +40,10 @@ const OUTCOMES = {
   },
 };
 
-// Colormap: blue/cyan rims, yellow transitions and intense red hotspots.
+// Blue-to-red model-derived colours, masked to the isolated leaf when available.
 // Positions match detector/heatmap.py so the API overlay looks the same.
 const HOTSPOT_STOPS = [
-  [0.00, 8, 24, 97], [0.24, 10, 76, 222], [0.37, 0, 190, 255],
+  [0.00, 10, 45, 185], [0.24, 20, 105, 240], [0.37, 0, 190, 255],
   [0.51, 30, 245, 183], [0.64, 255, 238, 28], [0.78, 255, 131, 8],
   [0.91, 255, 29, 12], [1.00, 196, 0, 0],
 ];
@@ -54,6 +54,11 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!scan || !scan.result) { window.location.replace("upload.html"); return; }
 
   const { result } = scan;
+  const isolatedPhoto = result.background_removed_applied ? result.background_removed_preview_url : null;
+  // Heatmap is computed from the isolated image when available. Never put a
+  // cropped-image CAM on the original photo. The classification *always* used
+  // the original photo, regardless of this heatmap-only preprocessing.
+  const imageForHeatmap = isolatedPhoto || (result.background_removed_applied ? null : (scan.image || null));
   const outcome = OUTCOMES[result.label];
   const $ = (id) => document.getElementById(id);
 
@@ -121,20 +126,40 @@ document.addEventListener("DOMContentLoaded", () => {
   stage.dataset.fit = MODEL_INFO.heatmapFit;
   const photo = $("viewer-photo");
   if (scan.image) photo.src = scan.image;
+  else if (imageForHeatmap) photo.src = imageForHeatmap;
   else photo.alt = "Photo not available";
+
+  const backgroundStatus = $("background-status");
+  if (result.background_removed_applied) {
+    backgroundStatus.textContent = "The disease prediction and confidence used your original photo. " +
+      "Background removal was applied automatically only for the heatmap (" +
+      (result.background_removal_method || "leaf isolation") + "). " +
+      "The heatmap explains the original predicted class on the isolated leaf, " +
+      "which may differ from the attention on the original photo." +
+      (isolatedPhoto ? "" : " The processed preview could not be loaded, so the interactive overlay is unavailable.");
+  } else if (result.label === "not_black_sigatoka") {
+    backgroundStatus.textContent = "The original photo did not pass the similarity check, so the classifier and heatmap did not run.";
+  } else {
+    backgroundStatus.textContent = "The disease prediction used the original photo. Automatic background removal for the heatmap was unavailable, " +
+      "so Grad-CAM used the original image instead. " +
+      (result.background_removal_reason || "");
+  }
 
   const modeButtons = [...document.querySelectorAll("[data-mode-btn]")];
   const opacity = $("opacity");
   const opacityOut = $("opacity-out");
   const canvas = $("heatmap-canvas");
   const probe = $("viewer-probe");
-  let camValues = null; // Float32Array 0..1, heatmap resolution
+  let camValues = null; // Float32Array 0..1, display-enhanced CAM
+  let camMask = null;   // Float32Array 0..1, leaf silhouette from U2Net alpha
   let camSize = [0, 0];
   // Printing must remain a synchronous, direct user action. A failed canvas
   // export or an unfinished heatmap must never prevent saving the PDF.
 
   function setMode(mode) {
     stage.dataset.mode = mode;
+    const requestedPhoto = mode === "photo" ? (scan.image || imageForHeatmap) : imageForHeatmap;
+    if (requestedPhoto && photo.src !== requestedPhoto) photo.src = requestedPhoto;
     modeButtons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.modeBtn === mode)));
     $("opacity-row").hidden = mode !== "overlay";
     paintHeatmap();
@@ -147,7 +172,10 @@ document.addEventListener("DOMContentLoaded", () => {
     paintHeatmap();
   });
 
-  if (result.heatmap_url) {
+  const isolatedButton = modeButtons.find((b) => b.dataset.modeBtn === "processed");
+  if (isolatedButton && isolatedPhoto) isolatedButton.disabled = false;
+
+  if (result.heatmap_url && (!result.background_removed_applied || isolatedPhoto)) {
     loadHeatmap(result.heatmap_url).then(() => {
       const heatmapButton = modeButtons.find((b) => b.dataset.modeBtn === "overlay");
       if (heatmapButton) {
@@ -163,11 +191,13 @@ document.addEventListener("DOMContentLoaded", () => {
       noHeatmap(error.message);
     });
   } else {
-    noHeatmap();
+    noHeatmap(result.background_removed_applied && !isolatedPhoto
+      ? "The processed image preview was unavailable, so an aligned interactive heatmap cannot be displayed."
+      : undefined);
   }
 
   function noHeatmap(viewerError) {
-    modeButtons.forEach((b) => { if (b.dataset.modeBtn !== "photo") b.disabled = true; });
+    modeButtons.forEach((b) => { if (b.dataset.modeBtn === "overlay") b.disabled = true; });
     setMode("photo");
     $("opacity-row").hidden = true;
     $("legend").hidden = true;
@@ -193,21 +223,34 @@ document.addEventListener("DOMContentLoaded", () => {
     tctx.drawImage(bmp, 0, 0);
     const { data } = tctx.getImageData(0, 0, w, h);
     camValues = new Float32Array(w * h);
-    for (let i = 0; i < w * h; i++) camValues[i] = data[i * 4] / 255;
+    camMask = new Float32Array(w * h);
+    for (let i = 0; i < w * h; i++) {
+      camValues[i] = data[i * 4] / 255;
+      // Encoded by detector/heatmap.py in the PNG alpha channel. Older
+      // grayscale PNGs have 255 alpha and remain fully supported.
+      camMask[i] = data[i * 4 + 3] / 255;
+    }
     camSize = [w, h];
     canvas.width = w; canvas.height = h;
 
-    // Summary statistics
-    let peak = 0, peakIdx = 0, focus = 0;
+    // Summary statistics of the DISPLAY-ENHANCED map, not raw attribution.
+    let peak = -1, peakIdx = 0, focus = 0, leafPixels = 0;
     for (let i = 0; i < camValues.length; i++) {
+      // Exclude the grey background from focus-area calculations.
+      if (camMask[i] < 0.5) continue;
+      leafPixels++;
       if (camValues[i] > peak) { peak = camValues[i]; peakIdx = i; }
       if (camValues[i] >= 0.6) focus++;
     }
     const px = (peakIdx % w) / w, py = Math.floor(peakIdx / w) / h;
     const vert = py < 0.33 ? "top" : py > 0.66 ? "bottom" : "middle";
     const horiz = px < 0.33 ? "left" : px > 0.66 ? "right" : "centre";
-    $("stat-focus").textContent = `${((focus / camValues.length) * 100).toFixed(0)}% of the frame`;
-    $("stat-peak").textContent = vert === "middle" && horiz === "centre" ? "Centre" : `${vert[0].toUpperCase()}${vert.slice(1)} ${horiz}`;
+    $("stat-focus").textContent = leafPixels
+      ? `${((focus / leafPixels) * 100).toFixed(0)}% of visible leaf`
+      : "Not available";
+    $("stat-peak").textContent = leafPixels
+      ? (vert === "middle" && horiz === "centre" ? "Centre" : `${vert[0].toUpperCase()}${vert.slice(1)} ${horiz}`)
+      : "Not available";
   }
 
   function paintHeatmap() {
@@ -224,14 +267,13 @@ document.addEventListener("DOMContentLoaded", () => {
       img.data[o] = r;
       img.data[o + 1] = g;
       img.data[o + 2] = b;
-      // Let the original leaf show through unimportant pixels.
-      // Blue/cyan form the boundary of a hotspot; orange/red mark its core.
-      // Keep cyan/yellow transition rings visible; reduce the large, solid
-      // red patches that previously covered the underlying photograph.
-      const t = Math.max(0, Math.min(1, (v - 0.19) / 0.76));
-      const fade = t * t * (3 - 2 * t);
-      const alpha = v < 0.19 ? 0 : (0.10 + 0.85 * fade);
-      img.data[o + 3] = overlay ? Math.round(255 * alphaScale * alpha) : 245;
+      // Keep the established colour ramp and red sensitivity ON THE LEAF.
+      // Transparent background prevents red blobs on the removed grey area.
+      // Matches detector/heatmap.py's API/PDF overlay at 100% strength.
+      const alpha = 0.58 + 0.29 * Math.sqrt(Math.max(0, Math.min(1, v)));
+      img.data[o + 3] = Math.round(
+        (overlay ? 255 * alphaScale * alpha : 245) * camMask[i]
+      );
     }
     ctx.putImageData(img, 0, 0);
   }
@@ -274,8 +316,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const px = Math.min(w - 1, Math.floor(x * w));
     const py = Math.min(h - 1, Math.floor(y * h));
-    const v = camValues[py * w + px];
-    probe.textContent = `Relative attention ${(v * 100).toFixed(0)}%`;
+    const index = py * w + px;
+    const v = camValues[index];
+    probe.textContent = camMask[index] < 0.1
+      ? "Background excluded"
+      : `Display intensity ${(v * 100).toFixed(0)}%`;
     probe.style.left = `${(stageX / rect.width) * 100}%`;
     probe.style.top = `${(stageY / rect.height) * 100}%`;
     probe.style.display = "block";
@@ -338,13 +383,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* ---------- Actions ---------- */
-  const toast = $("toast");
-  function showToast(msg) {
-    toast.textContent = msg;
-    toast.classList.add("is-visible");
-    setTimeout(() => toast.classList.remove("is-visible"), 2200);
-  }
-
   /* ---------- Detailed single-page PDF report ---------- */
   $("print-meta").textContent = $("report-meta").textContent;
   $("print-verdict").textContent = outcome.title;
@@ -381,7 +419,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const activeCandidate = (MODEL_INFO.candidates || []).find((model) => model.key === result.classifier_key);
   const configuredModel = activeCandidate?.name || MODEL_INFO.activeName;
   $("print-classifier").textContent = classified
-    ? `${configuredModel}; binary prediction: Black Sigatoka vs Healthy.`
+    ? `${configuredModel}; binary prediction: Black Sigatoka vs Healthy. Original photo used for prediction; background removal applies only to heatmap.`
     : "Not run because the similarity gate rejected the image.";
   $("print-confidence-explainer").textContent = classified
     ? "Classifier output for this image; not disease severity."
@@ -428,21 +466,25 @@ document.addEventListener("DOMContentLoaded", () => {
     : "No attention map is available for this scan.";
   function updatePrintAttention() {
     if (!camValues) return;
-    $("print-heatmap-status").textContent = "Gradient-guided Grad-CAM for the predicted class. Red/yellow areas show stronger relative attention; cyan marks transition areas.";
+    $("print-heatmap-status").textContent = "The prediction used the original photo. Gradient-guided attribution for its predicted class uses the " +
+      (result.background_removed_applied ? "automatically isolated leaf" : "original photo (background isolation unavailable)") +
+      ". Attention can differ from the original-photo prediction because the background has changed. Colour is restricted to the leaf silhouette when isolation succeeds; red hotspots are display-enhanced attention, not measured lesions.";
     $("print-focus-peak").textContent = $("stat-peak").textContent;
-    $("print-focus-area").textContent = $("stat-focus").textContent + " at relative attention ≥ 60%";
+    $("print-focus-area").textContent = $("stat-focus").textContent + " at display intensity ≥ 60%";
   }
   async function capturePrintOverlay() {
-    if (!camValues || !photo.src) return;
-    if (!photo.complete) {
-      try { await photo.decode(); } catch (_) { return; }
-    }
-    if (!photo.naturalWidth) return;
+    if (!camValues || !imageForHeatmap) return;
+    // Always draw the same model input used for the CAM, even if someone
+    // switched the interactive viewer back to the original photograph.
+    const modelPhoto = new Image();
+    modelPhoto.src = imageForHeatmap;
+    try { await modelPhoto.decode(); } catch (_) { return; }
+    if (!modelPhoto.naturalWidth) return;
     const [w, h] = camSize;
     const composite = document.createElement("canvas");
     composite.width = w; composite.height = h;
     const ctx = composite.getContext("2d");
-    ctx.drawImage(photo, 0, 0, w, h);
+    ctx.drawImage(modelPhoto, 0, 0, w, h);
     // Canvas is the same size as the CAM; honours the site's current colour map.
     ctx.drawImage(canvas, 0, 0, w, h);
     showPrintHeatmap(composite.toDataURL("image/jpeg", 0.89));
@@ -493,22 +535,5 @@ document.addEventListener("DOMContentLoaded", () => {
     window.print();
   });
 
-  $("copy-btn").addEventListener("click", async () => {
-    const lines = [
-      `Black Sigatoka Detector result`,
-      `Photo: ${scan.fileName}`,
-      `Analysed: ${when.toLocaleString()}`,
-      `Result: ${outcome.title}`,
-      `${outcome.meterLabel}: ${pct.toFixed(1)}%`,
-      `Model: ${MODEL_INFO.activeName} (validation recall ${formatPct(m.recall)}, F1 ${formatPct(m.f1)})`,
-      result.id ? `Reference: #${result.id}` : null,
-      "This is a screening aid, not a laboratory diagnosis. Exotic Plant Pest Hotline: 1800 084 881.",
-    ].filter(Boolean);
-    try {
-      await navigator.clipboard.writeText(lines.join("\n"));
-      showToast("Summary copied");
-    } catch (_) {
-      showToast("Couldn't access the clipboard");
-    }
-  });
+
 });

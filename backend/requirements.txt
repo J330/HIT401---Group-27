@@ -10,3 +10,7 @@ torch
 transformers
 timm
 albumentations
+
+# Same small U2Net background-removal model as the earlier Django project.
+# First use downloads its model weights (internet access required once).
+rembg[cpu]

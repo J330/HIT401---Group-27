@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400..600&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/style.css?v=20261010-cam2">
+  <link rel="stylesheet" href="/static/css/style.css?v=bg20261010">
 </head>
 <body>
   <header class="site-header">
@@ -66,6 +66,7 @@
             <div class="viewer-probe" id="viewer-probe" aria-hidden="true"></div>
             <div class="image-view-toggle" role="group" aria-label="Leaf image view">
               <button type="button" data-mode-btn="photo" aria-pressed="true">Original</button>
+              <button type="button" data-mode-btn="processed" aria-pressed="false" disabled title="Only available if background removal succeeds">Isolated leaf</button>
               <button type="button" data-mode-btn="overlay" aria-pressed="false" disabled title="Heatmap not available yet">Heatmap</button>
             </div>
           </div>
@@ -84,7 +85,8 @@
               <div><dt>Strongest focus</dt><dd id="stat-peak">—</dd></div>
               <div><dt>High-attention area</dt><dd id="stat-focus">—</dd></div>
             </dl>
-            <p class="viewer-caption">Gradient-guided Grad-CAM shows model sensitivity for the predicted class. Red/yellow peaks show higher relative influence; cyan outlines show transitions. This is not a map of confirmed lesions.</p>
+            <p class="viewer-caption" id="background-status">Image preprocessing will be shown here.</p>
+            <p class="viewer-caption">Grad-CAM targets the original predicted class on the automatically isolated leaf (or on the original photo if isolation fails). Because the image changes, this view may differ from the attention behind the original-photo prediction. When isolation succeeds, the heatmap colours only the segmented leaf; the removed background stays plain grey. Inside the leaf, blue shows lower relative influence, cyan/green is intermediate, and yellow/red shows stronger influence on the predicted class. Blue does not mean the model completely ignored that region; hotspots are visually expanded for readability, not measured disease boundaries. This is not a lesion map.</p>
           </div>
         </section>
       </div>
@@ -140,12 +142,10 @@
       <div class="actions-bar">
         <div class="btn-row">
           <button type="button" class="btn btn-secondary" id="print-btn">Save as PDF</button>
-          <button type="button" class="btn btn-secondary" id="copy-btn">Copy summary</button>
         </div>
         <a class="btn btn-primary" href="upload.html">Check another leaf</a>
       </div>
     </div>
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </main>
 
   <!-- Data-rich, one-page A4 report. Hidden on-screen and printed via window.print(). -->
@@ -239,6 +239,6 @@
     </div>
   </footer>
   <script src="/static/js/model-info.js"></script>
-  <script src="/static/js/result.js?v=20261010-cam2"></script>
+  <script src="/static/js/result.js?v=bg20261010"></script>
 </body>
 </html>

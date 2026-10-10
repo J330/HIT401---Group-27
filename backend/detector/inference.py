@@ -7,13 +7,14 @@ import logging
 from threading import RLock
 import numpy as np
 import torch
-from PIL import Image
+from PIL import Image, ImageOps
 from django.conf import settings
 from transformers import AutoImageProcessor, AutoModelForImageClassification, AutoModel
 import timm
 from albumentations import Compose, Resize, Normalize
 from albumentations.pytorch import ToTensorV2
 from .cam import generate_gradcam
+from .background_filter import make_background_filtered_view
 
 logger = logging.getLogger(__name__)
 _CLASSIFIER_LOCK = RLock()  # CAM forward hooks must not overlap requests
@@ -100,17 +101,21 @@ def _gate_check(pil_image):
     return best_distance <= GATE_THRESHOLD, best_class, best_distance
 
 
-def _classify(pil_image):
+def _prepare_classifier_input(pil_image):
+    """Apply the same tensor preprocessing for prediction and explanation."""
     if classifier_config["kind"] == "timm":
-        # timm models expect a plain normalised tensor, not a HF processor
         tf = Compose([Resize(224, 224), Normalize(), ToTensorV2()])
-        pixel_values = tf(image=np.array(pil_image))["image"].unsqueeze(0).to(DEVICE)
-        with torch.no_grad():
+        return tf(image=np.array(pil_image))["image"].unsqueeze(0).to(DEVICE)
+    inputs = classifier_processor(images=pil_image, return_tensors="pt")
+    return inputs["pixel_values"].to(DEVICE)
+
+
+def _classify(pil_image):
+    pixel_values = _prepare_classifier_input(pil_image)
+    with torch.no_grad():
+        if classifier_config["kind"] == "timm":
             logits = classifier_model(pixel_values)
-    else:
-        inputs = classifier_processor(images=pil_image, return_tensors="pt")
-        pixel_values = inputs["pixel_values"].to(DEVICE)
-        with torch.no_grad():
+        else:
             logits = classifier_model(pixel_values=pixel_values).logits
 
     probs = torch.softmax(logits, dim=1)[0]
@@ -125,12 +130,9 @@ def _explain(pixel_values, predicted_idx):
 
 
 def predict_image(image_file):
-    """
-    The single entry point detector/views.py calls.
-    image_file: a Django UploadedFile (already opened).
-    Returns a plain dict ready to hand to the serializer/response.
-    """
-    pil_image = Image.open(image_file).convert("RGB")
+    """Stage 1 and 2 use the original; isolation applies only to Grad-CAM."""
+    pil_image = ImageOps.exif_transpose(Image.open(image_file)).convert("RGB")
+    # Stage 1 checks the ORIGINAL image to maintain the gate calibration.
     in_distribution, nearest_class, distance = _gate_check(pil_image)
 
     if not in_distribution:
@@ -144,24 +146,40 @@ def predict_image(image_file):
             "gate_distance": round(float(distance), 5),
             "gate_threshold": GATE_THRESHOLD,
             "classifier_key": ACTIVE_MODEL_KEY,
+            "background_removed_applied": False,
+            "background_removal_method": None,
+            "background_removal_reason": "Not applied because Stage 1 rejected the image.",
+            "heatmap_source_image": None,
+            "heatmap_foreground_mask": None,
         }
 
-    # Hooks belong to a shared classifier: serialize all forward calls while
-    # the Grad-CAM hook is registered so another scan cannot overwrite it.
+    # Stage 2 prediction ALWAYS uses the original, unchanged photograph.
+    # The U2Net cutout is made only after a class has been selected, and is
+    # used for a separate Grad-CAM forward pass targeting THAT original class.
+    # Because this second pass sees a different input, its attribution is for
+    # the isolated view; it must not be described as attribution of the original
+    # forward pass. The predicted class and confidence remain unchanged.
+    # Keep the first, unchanged image inference isolated from concurrent CAM
+    # hooks, but do not hold the classifier lock while U2Net downloads/executes.
     with _CLASSIFIER_LOCK:
-        label, confidence, pixel_values, predicted_idx = _classify(pil_image)
-        heatmap_error = None
-        try:
-            heatmap_array = _explain(pixel_values, predicted_idx)
-        except Exception as exc:
-            # Preserve the prediction, but NEVER silently swallow the actual CAM
-            # error: Django logs and (in DEBUG mode) the result page report it.
-            logger.exception("Grad-CAM failed for active model %s", ACTIVE_MODEL_KEY)
-            heatmap_array = None
-            heatmap_error = (
-                f"Grad-CAM ({ACTIVE_MODEL_KEY}): {type(exc).__name__}: {exc}"
-                if settings.DEBUG else "Grad-CAM could not be generated for this scan."
-            )
+        label, confidence, original_pixels, predicted_idx = _classify(pil_image)
+
+    filtered = make_background_filtered_view(pil_image)
+    cam_image = filtered.image if filtered.applied else pil_image
+    cam_pixels = (_prepare_classifier_input(cam_image)
+                  if filtered.applied else original_pixels)
+
+    heatmap_error = None
+    try:
+        with _CLASSIFIER_LOCK:
+            heatmap_array = _explain(cam_pixels, predicted_idx)
+    except Exception as exc:
+        logger.exception("Grad-CAM failed for active model %s", ACTIVE_MODEL_KEY)
+        heatmap_array = None
+        heatmap_error = (
+            f"Grad-CAM ({ACTIVE_MODEL_KEY}): {type(exc).__name__}: {exc}"
+            if settings.DEBUG else "Grad-CAM could not be generated for this scan."
+        )
 
     return {
         "label": label,
@@ -174,4 +192,9 @@ def predict_image(image_file):
         "gate_distance": round(float(distance), 5),
         "gate_threshold": GATE_THRESHOLD,
         "classifier_key": ACTIVE_MODEL_KEY,
+        "background_removed_applied": bool(filtered.applied),
+        "background_removal_method": filtered.method,
+        "background_removal_reason": filtered.reason,
+        "heatmap_source_image": cam_image,
+        "heatmap_foreground_mask": filtered.foreground_mask if filtered.applied else None,
     }

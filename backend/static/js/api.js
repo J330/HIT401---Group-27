@@ -80,6 +80,10 @@ function normaliseResult(raw) {
     gate_nearest_class: raw.gate_nearest_class ?? null,
     classifier_key: raw.classifier_key ?? null,
     heatmap_overlay_url: toAbsoluteUrl(raw.heatmap_overlay_url),
+    background_removed_applied: Boolean(raw.background_removed_applied),
+    background_removal_method: raw.background_removal_method || null,
+    background_removal_reason: raw.background_removal_reason || null,
+    background_removed_preview_url: toAbsoluteUrl(raw.background_removed_preview_url),
     created_at: raw.created_at || new Date().toISOString(),
     mocked: Boolean(raw._mock),
   };
