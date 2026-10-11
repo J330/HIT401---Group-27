@@ -9,3 +9,10 @@
 - PowerShell helper now supports alternate classifier models and optional GCS downloading; local source deploy avoids GitHub's Git LFS pointer checkout once `git lfs pull` succeeded.
 
 The old ZIP had no trained model files. This merge does not claim it can generate AI predictions without the correct trained weights.
+
+## Cloud Build Git LFS recovery update
+
+Added `cloudrun/fetch_git_lfs.sh` and a new Cloud Build step to replace Git LFS
+pointers with real model files using the public GitHub repository at the exact
+triggered commit, if `_MODEL_BUCKET` is not set. Cloud Storage remains the
+fallback if GitHub LFS download cannot complete.

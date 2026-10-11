@@ -2,11 +2,11 @@
 # It downloads them from a GCS bucket when _MODEL_BUCKET is configured.
 # The older Dockerfile-style source deploy can start the website without models,
 # but prediction still cannot work until the checkpoints exist.
-# To avoid GitHub/LFS pointers, use local PowerShell source deployment after
-# `git lfs pull` OR configure _MODEL_BUCKET below / in trigger substitutions.
+# GitHub-triggered builds initially receive Git LFS pointer files.
+# If _MODEL_BUCKET is set, restore the two checkpoints from Cloud Storage.
+# Otherwise attempt to fetch the real bytes from public GitHub LFS at this commit.
+# If GitHub LFS access/quota fails, set _MODEL_BUCKET to a Cloud Storage bucket.
 # Create an Artifact Registry Docker repository before using this pipeline.
-# For GitHub triggers, prefer supplying large model checkpoints from GCS
-# (_MODEL_BUCKET), rather than relying on Git LFS checkout behavior.
 substitutions:
   _SERVICE_NAME: banana-leaf-detector
   _REGION: australia-southeast1
@@ -14,6 +14,7 @@ substitutions:
   _ACTIVE_MODEL: convnextv2
   _DJANGO_SECRET: django-secret
   _MODEL_BUCKET: ''
+  _GIT_LFS_REPO: 'https://github.com/J330/HIT401---Group-27.git'
 
 steps:
   # The Cloud SDK stable image has gcloud, but may not include python3.
@@ -37,6 +38,13 @@ steps:
           gcloud storage cp "gs://${_MODEL_BUCKET}/gate_centroids.pt" ml/models/gate_centroids.pt
           gcloud storage cp "gs://${_MODEL_BUCKET}/$$FILE" "ml/models/$$FILE"
         fi
+
+  # Runs only if _MODEL_BUCKET is empty and the worktree still has pointers.
+  # Uses the exact fetched commit so a newer GitHub push cannot change weights.
+  - id: 'Resolve GitHub LFS checkpoints'
+    name: 'ubuntu:24.04'
+    entrypoint: 'bash'
+    args: ['cloudrun/fetch_git_lfs.sh', '${_MODEL_BUCKET}', '${_ACTIVE_MODEL}', '$COMMIT_SHA', '${_GIT_LFS_REPO}']
 
   - id: 'Verify model checkpoints'
     name: 'python:3.11-slim'

@@ -77,17 +77,23 @@ Google Cloud Storage bucket to the PowerShell helper:
 
 ## GitHub auto-deployment: Cloud Build trigger
 
-A GitHub-linked Cloud Build trigger receives **LFS pointers**, not trained
-checkpoint bytes. `cloudbuild.yaml` intentionally checks this and fails early;
-this is correct to prevent deploying an AI detector that cannot scan.
+A GitHub-linked Cloud Build trigger initially receives **LFS pointers**, not
+trained checkpoint bytes. The build now tries to resolve this automatically:
 
-- Upload the real `gate_centroids.pt` and `convnextv2base.pt` to the root of a
-  Cloud Storage bucket. The Cloud Build service account needs
-  `roles/storage.objectViewer` for that bucket.
-- Set `_MODEL_BUCKET` to the bucket's name (no `gs://`) in `cloudbuild.yaml`
-  **and/or** in the Cloud Build trigger substitutions (the trigger takes priority).
-- Re-run the trigger. Step 0 downloads the model files, Step 1 verifies them,
-  then Docker builds and Cloud Run deploys.
+- If `_MODEL_BUCKET` is empty, the **Resolve GitHub LFS checkpoints** step
+  installs Git LFS, fetches the exact triggering Git commit from the public
+  `_GIT_LFS_REPO`, and downloads only `gate_centroids.pt` and the selected
+  classifier `.pt` file. The next step validates that the pointer files have
+  been replaced with real data.
+- If GitHub LFS quota, object availability, or permissions prevent this,
+  upload the same two real weights to a Cloud Storage bucket and set
+  `_MODEL_BUCKET` to the bucket name (without `gs://`). The Cloud Build
+  service account needs `roles/storage.objectViewer` for that bucket.
+- Update any `_MODEL_BUCKET` override in your Cloud Build trigger as well;
+  trigger substitutions take precedence over YAML defaults.
+
+**Do not remove checkpoint verification.** Skipping it might let the website
+start, but AI scanning would fail at runtime.
 
 ## Website-only caveat
 
