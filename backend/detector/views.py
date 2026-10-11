@@ -26,8 +26,16 @@ class PredictView(APIView):
         if image_file is None:
             return Response({"error": "Select an image first."}, status=400)
         # Load heavy AI dependencies only when a scan is requested.
-        from .inference import predict_image
-        result = predict_image(image_file)   # inference reads in memory, nothing persisted
+        try:
+            from .inference import predict_image
+            result = predict_image(image_file)  # Read in memory; stateless on Cloud Run.
+        except (OSError, RuntimeError) as exc:
+            logger.exception("Prediction model unavailable or invalid")
+            if settings.DEBUG:
+                detail = str(exc)
+            else:
+                detail = "The AI models are not available on this deployment. Check the Cloud Run logs and install real trained checkpoints."
+            return Response({"error": detail}, status=503)
 
         # Cloud Run is stateless; avoid writing to ephemeral SQLite there.
         # The report still receives all prediction data without a database ID.

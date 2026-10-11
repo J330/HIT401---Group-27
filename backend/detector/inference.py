@@ -75,15 +75,56 @@ def _load_active_classifier():
     return model, processor, config
 
 
-classifier_model, classifier_processor, classifier_config = _load_active_classifier()
-print(f"[inference.py] Active website model: {ACTIVE_MODEL_KEY}")
-
-# --- DINOv2 open-set gate -- always loaded, regardless of active classifier ---
+# Like the older project, load trained models on the FIRST SCAN, not when
+# Django is imported by Gunicorn or collectstatic. A model-free image can serve
+# the website, but it cannot give AI predictions until real .pt files exist.
+classifier_model = None
+classifier_processor = None
+classifier_config = None
 GATE_CHECKPOINT = "facebook/dinov2-base"
 GATE_THRESHOLD = 0.30  # cosine distance -- calibrate with ml/predict_cli.py first
-gate_processor = AutoImageProcessor.from_pretrained(GATE_CHECKPOINT)
-gate_model = AutoModel.from_pretrained(GATE_CHECKPOINT).eval().to(DEVICE)
-gate_centroids = torch.load(os.path.join(ML_MODELS_DIR, "gate_centroids.pt"), map_location=DEVICE)
+gate_processor = None
+gate_model = None
+gate_centroids = None
+_MODEL_LOAD_LOCK = RLock()
+
+
+def _ensure_models_loaded():
+    global classifier_model, classifier_processor, classifier_config
+    global gate_processor, gate_model, gate_centroids
+    if classifier_model is not None and gate_model is not None:
+        return
+    with _MODEL_LOAD_LOCK:
+        if classifier_model is not None and gate_model is not None:
+            return
+        # Check for LFS pointers BEFORE passing them to torch.load so failure
+        # is actionable instead of an obscure invalid-deserialization error.
+        paths = [
+            os.path.join(ML_MODELS_DIR, 'gate_centroids.pt'),
+            MODEL_REGISTRY[ACTIVE_MODEL_KEY]['weights'],
+        ]
+        for path in paths:
+            if not os.path.isfile(path):
+                raise RuntimeError(f"Trained model file missing: {path}. Obtain the real .pt weights via git lfs pull or Cloud Storage.")
+            with open(path, 'rb') as fh:
+                header = fh.read(128)
+            if header.startswith(b'version https://git-lfs.github.com/spec/v1'):
+                raise RuntimeError(f"Trained model file is a Git LFS pointer, not actual weights: {path}. Run git lfs pull locally or configure _MODEL_BUCKET in Cloud Build.")
+        # Assign globals only after all loads succeed; retry on later scans if
+        # the model files were absent or the load failed.
+        loaded_clf, loaded_processor, loaded_config = _load_active_classifier()
+        loaded_gate_processor = AutoImageProcessor.from_pretrained(GATE_CHECKPOINT)
+        loaded_gate_model = AutoModel.from_pretrained(GATE_CHECKPOINT).eval().to(DEVICE)
+        loaded_centroids = torch.load(paths[0], map_location=DEVICE, weights_only=True)
+        if not isinstance(loaded_centroids, dict):
+            raise RuntimeError('Gate checkpoint is not a dictionary of class centroids.')
+        classifier_model = loaded_clf
+        classifier_processor = loaded_processor
+        classifier_config = loaded_config
+        gate_processor = loaded_gate_processor
+        gate_model = loaded_gate_model
+        gate_centroids = loaded_centroids
+        logger.info('Loaded classifier %s and DINOv2 gate on first scan', ACTIVE_MODEL_KEY)
 
 
 def _gate_check(pil_image):
@@ -130,6 +171,8 @@ def predict_image(image_file):
     image_file: a Django UploadedFile (already opened).
     Returns a plain dict ready to hand to the serializer/response.
     """
+    # Do not load hundreds of MB of AI weights when the server starts.
+    _ensure_models_loaded()
     pil_image = Image.open(image_file).convert("RGB")
     in_distribution, nearest_class, distance = _gate_check(pil_image)
 
