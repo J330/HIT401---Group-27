@@ -1,0 +1,19 @@
+.git/
+.gitignore
+**/__pycache__/
+**/*.py[cod]
+**/.pytest_cache/
+.venv/
+venv/
+ADR/
+data/
+frontend/
+*.zip
+*.pdf
+backend/db.sqlite3
+backend/db.sqlite3-*
+backend/logs/
+backend/staticfiles/
+**/.env
+**/.env.*
+# Do NOT exclude ml/models/*.pt: this source deploy needs real checkpoints.

@@ -276,12 +276,8 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         sessionStorage.setItem("lastScan", JSON.stringify(payload));
       } catch (_) {
-        // Avoid failing the entire scan if two large image previews exceed
-        // sessionStorage quota. The heatmap and other report data are retained.
-        payload.image = null;
-        if (payload.result) payload.result.background_removed_preview_url = null;
-        try { sessionStorage.setItem("lastScan", JSON.stringify(payload)); }
-        catch (_) { showStatus("The scan finished but the report is too large for browser storage. Try a smaller photo.", true); busy = false; return; }
+        payload.image = null; // storage full — show the result without the photo rather than fail
+        sessionStorage.setItem("lastScan", JSON.stringify(payload));
       }
       window.location.href = "result.html";
     } catch (err) {
