@@ -73,7 +73,7 @@ If you change the classifier, update the `ACTIVE_MODEL` **Docker build argument*
 1. Create an Artifact Registry Docker repository named `cloud-run-images` in `australia-southeast1` (or change `_REPOSITORY`).
 2. In Google Cloud Console > Cloud Build > Triggers, create a GitHub push trigger pointing at **`cloudbuild.yaml` in repo root**.
 3. Set `_REGION`, `_SERVICE_NAME`, `_ACTIVE_MODEL`, `_DJANGO_SECRET` as needed.
-4. Prefer `_MODEL_BUCKET=YOUR_EXISTING_BUCKET_NAME` for actual weight storage. Put `gate_centroids.pt` and `convnextv2base.pt` at the bucket root; set IAM on the build identity for GCS read. If models are available as real bytes in the repo checkout, leave `_MODEL_BUCKET` blank.
+4. Prefer `_MODEL_BUCKET=YOUR_EXISTING_BUCKET_NAME` for actual weight storage. Put `gate_centroids.pt` and `convnextv2base.pt` at the bucket root; set IAM on the build identity for GCS read. If models are available as real bytes in the repo checkout, leave `_MODEL_BUCKET` blank. The Cloud SDK stage only downloads files; a separate `python:3.11-slim` stage runs `cloudrun/check_models.py`. This avoids `python3: command not found` in the Cloud SDK image.
 5. Give the trigger's Cloud Build service account Artifact Registry Writer, Cloud Run Admin, Service Account User (for the Run service identity), and any additional required Secret Manager / GCS access. Google Cloud project policies vary; review least privilege grants.
 
 The build has `options.logging: CLOUD_LOGGING_ONLY` to accommodate builds using an explicit service account. The image embeds the weights and pretrained backbones, so the Cloud Run container does not need network access to Hugging Face while scanning.

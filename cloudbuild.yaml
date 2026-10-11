@@ -10,7 +10,9 @@ substitutions:
   _MODEL_BUCKET: ''
 
 steps:
-  - id: 'Get and verify model checkpoints'
+  # The Cloud SDK stable image has gcloud, but may not include python3.
+  # Fetch model weights first, then verify with a separate Python image.
+  - id: 'Fetch model checkpoints'
     name: 'gcr.io/google.com/cloudsdktool/google-cloud-cli:stable'
     entrypoint: 'bash'
     args:
@@ -29,7 +31,11 @@ steps:
           gcloud storage cp "gs://${_MODEL_BUCKET}/gate_centroids.pt" ml/models/gate_centroids.pt
           gcloud storage cp "gs://${_MODEL_BUCKET}/$$FILE" "ml/models/$$FILE"
         fi
-        python3 cloudrun/check_models.py --model "${_ACTIVE_MODEL}"
+
+  - id: 'Verify model checkpoints'
+    name: 'python:3.11-slim'
+    entrypoint: 'python3'
+    args: ['cloudrun/check_models.py', '--model', '${_ACTIVE_MODEL}']
 
   - id: 'Build image'
     name: 'gcr.io/cloud-builders/docker'
